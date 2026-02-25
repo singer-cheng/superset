@@ -270,8 +270,9 @@ pre-commit run eslint            # Frontend linting
 
 - **Python 3.10** virtualenv at `/workspace/venv` — activate with `source /workspace/venv/bin/activate`
 - **Node.js 20** via nvm (default alias) — activate with `source ~/.nvm/nvm.sh && nvm use 20`
-- Metadata DB is **SQLite** (default, no external DB required for dev)
+- Metadata DB is **PostgreSQL** — configured via `SUPERSET__SQLALCHEMY_DATABASE_URI` environment variable (injected as a secret). Superset's `config.py` reads this env var at the end and overrides the default SQLite URI.
 - Redis is **not required** for basic local dev; caching falls back to `SimpleCache`
+- The remote PostgreSQL may have noticeable network latency; `superset db upgrade` and `superset init` can take 5-20 minutes on first run due to hundreds of migration steps and permission record inserts.
 
 ### Starting services
 
