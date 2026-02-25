@@ -264,6 +264,34 @@ pre-commit run eslint            # Frontend linting
 - **[GPT.md](GPT.md)** - For OpenAI/ChatGPT tools
 - **[.cursor/rules/dev-standard.mdc](.cursor/rules/dev-standard.mdc)** - For Cursor editor
 
+## Cursor Cloud specific instructions
+
+### Environment overview
+
+- **Python 3.10** virtualenv at `/workspace/venv` — activate with `source /workspace/venv/bin/activate`
+- **Node.js 20** via nvm (default alias) — activate with `source ~/.nvm/nvm.sh && nvm use 20`
+- Metadata DB is **SQLite** (default, no external DB required for dev)
+- Redis is **not required** for basic local dev; caching falls back to `SimpleCache`
+
+### Starting services
+
+| Service | Command | Port |
+|---|---|---|
+| Flask backend | `source /workspace/venv/bin/activate && cd /workspace && flask run -p 8088 --reload --debugger` | 8088 |
+| Frontend dev server | `source ~/.nvm/nvm.sh && nvm use 20 && cd /workspace/superset-frontend && npm run dev-server` | 9000 |
+
+- The frontend webpack dev server proxies API calls to the Flask backend on port 8088.
+- First compilation takes ~60-90 seconds; subsequent hot-reloads are fast.
+- Admin credentials: `admin` / `general`
+
+### Gotchas
+
+- The system package `zstd` is required for the frontend webpack proxy config (`simple-zstd` module). If missing, `npm run dev-server` fails with "Can not access zstd!"
+- System build deps needed: `libsasl2-dev`, `libldap2-dev`, `libpq-dev`, `default-libmysqlclient-dev`, `pkg-config`, `libssl-dev`
+- If `pre-commit install` fails with `core.hooksPath` error, run `git config --unset-all core.hooksPath` first.
+- Frontend tests run from `superset-frontend/` using `npm run test`. Backend tests use `pytest` from the project root with the venv activated.
+- Frontend lint uses oxlint: `npm run lint` (from `superset-frontend/`).
+
 ---
 
 **LLM Note**: This codebase is actively modernizing toward full TypeScript and type safety. Always run `pre-commit run` to validate changes. Follow the ongoing refactors section to avoid deprecated patterns.
