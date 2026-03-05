@@ -51,9 +51,11 @@ function defaultTooltipGenerator(o: JsonObject, formData: QueryFormData) {
     <div className="deckgl-tooltip">
       <TooltipRow label="H3: " value={o.object?.hexagon} />
       {metricLabel && (
-        <TooltipRow label={`${metricLabel}: `} value={value != null ? value : '—'} />
+        <TooltipRow
+          label={`${metricLabel}: `}
+          value={value != null ? value : '—'}
+        />
       )}
-
     </div>
   );
 }

@@ -264,6 +264,10 @@ pre-commit run eslint            # Frontend linting
 - **[GPT.md](GPT.md)** - For OpenAI/ChatGPT tools
 - **[.cursor/rules/dev-standard.mdc](.cursor/rules/dev-standard.mdc)** - For Cursor editor
 
+## login
+
+如果需要登录，登录信息在 superset_config.py 中
+
 ---
 
 **LLM Note**: This codebase is actively modernizing toward full TypeScript and type safety. Always run `pre-commit run` to validate changes. Follow the ongoing refactors section to avoid deprecated patterns.

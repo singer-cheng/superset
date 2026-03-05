@@ -33,7 +33,7 @@ import {
   useRef,
 } from 'react';
 import { isEqual } from 'lodash';
-import { StaticMap } from 'react-map-gl';
+import StaticMap from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import type { Layer } from '@deck.gl/core';
 import { JsonObject, JsonValue, usePrevious } from '@superset-ui/core';
@@ -51,6 +51,23 @@ import {
 
 const TICK = 250; // milliseconds
 
+const sanitizeViewport = (viewport: Viewport): Viewport => {
+  const { longitude, latitude, zoom, bearing, pitch } = viewport;
+  const newViewport = { ...viewport };
+  if (!Number.isFinite(longitude)) newViewport.longitude = 0;
+  if (!Number.isFinite(latitude)) {
+    newViewport.latitude = 0;
+  } else {
+    // deck.gl latitude must be between -90 and 90
+    newViewport.latitude = Math.min(Math.max(latitude, -89.9), 89.9);
+  }
+  if (!Number.isFinite(zoom)) newViewport.zoom = 0;
+  if (bearing !== undefined && !Number.isFinite(bearing))
+    newViewport.bearing = 0;
+  if (pitch !== undefined && !Number.isFinite(pitch)) newViewport.pitch = 0;
+  return newViewport;
+};
+
 export type DeckGLContainerProps = {
   viewport: Viewport;
   setControlValue?: (control: string, value: JsonValue) => void;
@@ -67,7 +84,9 @@ export const DeckGLContainer = memo(
   forwardRef((props: DeckGLContainerProps, ref) => {
     const [tooltip, setTooltip] = useState<TooltipProps['tooltip']>(null);
     const [lastUpdate, setLastUpdate] = useState<number | null>(null);
-    const [viewState, setViewState] = useState(props.viewport);
+    const [viewState, setViewState] = useState(() =>
+      sanitizeViewport(props.viewport),
+    );
     const prevViewport = usePrevious(props.viewport);
     const glContextRef = useRef<WebGL2RenderingContext | null>(null);
 
@@ -98,7 +117,7 @@ export const DeckGLContainer = memo(
 
     useEffect(() => {
       if (!isEqual(props.viewport, prevViewport)) {
-        setViewState(props.viewport);
+        setViewState(sanitizeViewport(props.viewport));
       }
     }, [prevViewport, props.viewport]);
 

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "superset": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "superset-mcp"
+      ],
+      "environment": {
+        // "SUPERSET_BASE_URL": "http://127.0.0.1:8088",
+        "SUPERSET_BASE_URL": "http://172.22.67.236",
+        "SUPERSET_USERNAME": "admin",
+        "SUPERSET_PASSWORD": "tnq_PWV0kex3tpr1ber"
+      },
+      "enabled": true
+    }
+  }
+}

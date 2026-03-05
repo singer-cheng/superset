@@ -16,11 +16,15 @@
 | 1.0 | 2026-02-03 | - | 初稿，整体架构与详细设计 |
 | 1.1 | 2026-03-03 | - | 采集覆盖总览看板：下线「各类型采集量折线对比」图表，附录 B.1 图表数改为 7 张、布局去掉 ROW_2 |
 | 1.2 | 2026-03-03 | - | 将 DS02（gadm_country_boundary 单表）合并入 DS01；覆盖热力与国家边界面统一使用 DS01，删除 DS02 数据集规划 |
-| 1.3 | 2026-03-04 | - | DB01 新增 CH-DB01-09 采集明细下钻表 + CH-DB01-10 国家详情地图，加入 ROW_2；CH-DB01-01 保持 world_map 类型，点击国家 → 国家详情地图联动显示该国 |
+| 1.3 | 2026-03-04 | - | DB01 新增 CH-DB01-09 采集明细下钻表，加入 ROW_2；CH-DB01-01 使用 deck_polygon 类型 |
 | 1.4 | 2026-03-04 | - | 实施 B.1.5 看板布局：创建 CH-DB01-10（chartId=122）和 CH-DB01-09（chartId=123, table），更新看板 position_json（ROW_2）和 json_metadata（chartsInScope 加入 122、123） |
 | 1.5 | 2026-03-04 | - | CH-DB01-10 从 `country_map` 改为 `deck_geojson`：country_map 的 select_country 为静态参数无法被 Cross-filter 动态切换；改用 deck_geojson 渲染 DS-DB01-01 的 geojson 列（`ST_AsGeoJSON(g.geom)`），筛选国家后自然只显示对应国家边界 |
 | 1.6 | 2026-03-04 | - | 国家详情地图不显示修复：① 图表 122 底图由 `mapbox://styles/mapbox/light-v11` 改为 OSM（`https://tile.openstreetmap.org/{z}/{x}/{y}.png`），避免未配置 MAPBOX_API_KEY 时底图空白；② DS-DB01-01 的 geojson 列改为标准 GeoJSON Feature 格式（`json_build_object('type','Feature','geometry',ST_AsGeoJSON(g.geom)::json,'properties',...)::text`）以兼容 deck.gl 渲染 |
 | 1.7 | 2026-03-04 | - | 需求：未选国家时国家详情地图与采集明细下钻表保持为空；在 B.1.5 实施要点后增加实现说明与手动步骤（专用 Virtual Dataset + `filter_values('country')` Jinja，无选中国家时 WHERE 1=0） |
+| 1.8 | 2026-03-06 | - | 根据「采集覆盖总览-V1」实际运行看板更新：① 完善 DS01 虚拟数据集 SQL (ID 69)；② 更新图表 126 (deck_polygon) 与 123 (table) 配置；③ 同步最新三栏式对齐布局 |
+| 1.9 | 2026-03-06 | - | 结构重构：① B.2 道路热力看板定号为 DB02 (Dashboard 19)；② B.3 POI 热力看板定号为 DB03 (Dashboard 20)；③ B.4 人口热力看板定号为 DB04 (Dashboard 22)；④ 统一所有主题为复合对齐布局模式；⑤ 补全各看板图表规划 |
+| 1.10 | 2026-03-06 | - | 全面审查：① 更新 4.6.2 数据集表格添加 DS02/03/04 虚拟数据集；② 更新 4.6.4.1 添加实际 Dashboard ID；③ 统一 4.6.4.2 布局说明为通用模式；④ 移除口语化表述，规范文档格式 |
+| 1.11 | 2026-03-06 | - | 命名规范调整：① 图表 126 保留「瓦片」二字；② 数据集 30/31 重命名为 ds_osm_road_length/ds_osm_road_length_all；③ 清理废弃的 CH-DB01-10（国家详情地图）相关描述；④ 更新 B.1 章节以匹配实际运行的看板配置 |
 ---
 
 ## 目录
@@ -309,22 +313,25 @@ REDIS_PORT=6379
 
 Superset 中「Dataset」对应一个可查询的物理表或虚拟 SQL，用于生成图表。下表列出建议创建的数据集、来源类型（表 / SQL）、主要字段及用途。
 
-| 序号 | 数据集名称 | 来源类型 | 来源（表名或 SQL 说明） | 主要字段/说明 | 用途 |
-|------|------------|----------|--------------------------|----------------|------|
-| DS01 | ds_coverage_by_country | SQL | crawler_tile_all + gadm_country_boundary JOIN | country_code3, **country**, country_name, **geom**, total_count, google_map_count, google_earth_count | 覆盖热力与国家边界面（含几何，原 DS02 已合并入）；详见**附录 B.1.3.1** |
-| DS03 | ds_crawler_tile_all | Table | crawler_tile_all | country, type, dt, count_nums | 覆盖统计柱状/趋势 |
-| DS04 | ds_satellite_images | Table | satellite_images | id, file_path, coordinate_z, coordinate_x, coordinate_y, extent, provider, capture_date | 影像覆盖点/面、下钻 |
-| DS05 | ds_dem_tiles | Table | dem_tiles_data | id, tile_id, level, geom, source_name | DEM 覆盖点/面 |
-| DS06 | ds_osm_road_length | Table | app_osm_road_length | mo, country_code, road_subtype, road_length_km | 道路长度柱状/趋势 |
-| DS07 | ds_osm_road_length_all | Table | app_osm_road_length_all | mo, country_code, open_road, close_road, total_road | 道路全量趋势 |
-| DS08 | ds_foursquare_poi | Table | app_foursquare_places_d | country_alpha3, date_refreshed, level1_category_name, poi_count, is_closed | POI 柱状/饼图/趋势 |
-| DS09 | ds_osm_address | Table | app_osm_address_info | country, count_nums | 地址统计 |
-| DS10 | ds_road_compare | Table | road_overture_osm_compare_m | country, overture_total, osm_total, matched_count, match_rate | Overture vs OSM 对比 |
-| DS11 | ds_population | Table | dw_osm_population_info | country, countryname, provincename, population, sourcepop | 人口统计 |
-| DS12 | ds_overture_population | Table | overture_area_population | country, subtype, subtype_cn, area, population | Overture 区域人口 |
-| DS13 | ds_country_dim | Table | dim_country | id, alpha2_code, alpha3_code, short_name, full_name | 筛选器/名称解析 |
-| DS14 | ds_osm_country_relation | Table | dim_osm_country_relation | id, area_name_en, area_name_cn, parent_id, adm_level, country_code_alpha2 | 下钻层级/筛选 |
-| DS15 | ds_satellite_detail | SQL | 见下方 SQL | 下钻明细，带分页限制 | 下钻列表 |
+| 序号 | 数据集名称（逻辑标识） | 实际表名 | 来源类型 | 来源（表名或 SQL 说明） | 主要字段/说明 | 用途 |
+|------|-------------------|----------|----------|--------------------------|----------------|------|
+| DS01 | ds_db01_coverage_world_map (ID: 69) | crawler_coverage_polygon_v2 | SQL | crawler_tile_all + gadm_country_boundary JOIN | country_code3, **country**, country_name, **geojson**, crawl_count | 覆盖热力图核心数据集。使用 ST_Simplify(geom, 0.1) 提升渲染性能。 |
+| DS02 | ds_road_coverage_world_map (ID: 70) | ds_road_coverage_world_map | SQL | app_osm_road_length + gadm_country_boundary JOIN | country_code3, **country**, country_name, **geom**, total_road_length | 道路热力图数据集。使用 ST_Simplify(geom, 0.1) 提升渲染性能。 |
+| DS03 | ds_poi_coverage_world_map (ID: 71) | ds_poi_coverage_world_map | SQL | app_foursquare_places_d + gadm_country_boundary JOIN | country_code3, **country**, country_name, **geom**, total_poi_count | POI 热力图数据集。使用 ST_Simplify(geom, 0.1) 提升渲染性能。 |
+| DS04 | ds_population_coverage_world_map (ID: 72) | ds_population_coverage_world_map | SQL | dw_osm_population_info + gadm_country_boundary JOIN | country_code3, **country**, country_name, **geom**, total_population | 人口热力图数据集。使用 ST_Simplify(geom, 0.1) 提升渲染性能。 |
+| DS05 | ds_crawler_tile_all | crawler_tile_all | Table | crawler_tile_all | country, type, dt, count_nums | 覆盖统计柱状/趋势 |
+| DS06 | ds_satellite_images | satellite_images | Table | satellite_images | id, file_path, coordinate_z, coordinate_x, coordinate_y, extent, provider, capture_date | 影像覆盖点/面、下钻 |
+| DS07 | ds_dem_tiles | dem_tiles_data | Table | dem_tiles_data | id, tile_id, level, geom, source_name | DEM 覆盖点/面 |
+| DS08 | ds_osm_road_length | app_osm_road_length | Table | app_osm_road_length | mo, country_code, road_subtype, road_length_km | 道路长度柱状/趋势 |
+| DS09 | ds_osm_road_length_all | app_osm_road_length_all | Table | app_osm_road_length_all | mo, country_code, open_road, close_road, total_road | 道路全量趋势 |
+| DS10 | ds_foursquare_poi | Table | app_foursquare_places_d | country_alpha3, date_refreshed, level1_category_name, poi_count, is_closed | POI 柱状/饼图/趋势 |
+| DS11 | ds_osm_address | Table | app_osm_address_info | country, count_nums | 地址统计 |
+| DS12 | ds_road_compare | Table | road_overture_osm_compare_m | country, overture_total, osm_total, matched_count, match_rate | Overture vs OSM 对比 |
+| DS13 | ds_population | Table | dw_osm_population_info | country, countryname, provincename, population, sourcepop | 人口统计 |
+| DS14 | ds_overture_population | Table | overture_area_population | country, subtype, subtype_cn, area, population | Overture 区域人口 |
+| DS15 | ds_country_dim | Table | dim_country | id, alpha2_code, alpha3_code, short_name, full_name | 筛选器/名称解析 |
+| DS16 | ds_osm_country_relation | Table | dim_osm_country_relation | id, area_name_en, area_name_cn, parent_id, adm_level, country_code_alpha2 | 下钻层级/筛选 |
+| DS17 | ds_satellite_detail | SQL | 见下方 SQL | 下钻明细，带分页限制 | 下钻列表 |
 
 **DS01（覆盖热力与边界合一）**：`crawler_tile_all` + `gadm_country_boundary` JOIN，同时提供 **geom**（国家边界面）与覆盖指标；原 DS02 已合并入，不再单独建边界数据集。SQL、输出列、Superset 配置等详见**附录 B.1.3.1**。
 
@@ -367,7 +374,7 @@ LIMIT 1000
 | CH09 | POI 分类占比 | Pie Chart | DS08 | 维度：level1_category_name；指标：poi_count（Sum）；Filter：country_alpha3, date_refreshed | — |
 | CH10 | Overture vs OSM 道路对比 | Bar Chart | DS10 | X：country；Y：overture_total, osm_total, matched_count；或双轴 match_rate | — |
 | CH11 | 人口分布-按国家 | Bar Chart | DS11 或 DS12 | X：country 或 countryname；Y：population（Sum）；Filter：provincename | — |
-| CH12 | 卫星影像下钻明细表 | Table | DS15 | 列：id, file_path, coordinate_z, coordinate_x, coordinate_y, provider, capture_date；Filter：country, date_from, date_to；分页 | 依赖 DS15 的 Template 参数 |
+| CH12 | 卫星影像下钻明细表 | Table | DS17 | 列：id, file_path, coordinate_z, coordinate_x, coordinate_y, provider, capture_date；Filter：country, date_from, date_to；分页 | 依赖 DS17 的 Template 参数 |
 | CH13 | 国家筛选器 | Filter Box / Native Filter | DS13 或 DS14 | 筛选项：country（alpha2/alpha3 或 area_name）；可多选 | 与看板其他图表联动 |
 
 **图表类型与字段对应关系小结**：
@@ -383,41 +390,36 @@ LIMIT 1000
 
 ##### 4.6.4.1 看板清单与组成
 
-| 看板 ID | 看板名称 | 用途 | 由哪些图表组成 |
+| 看板 ID (实际) | 看板名称 | 用途 | 由哪些图表组成 |
 |---------|----------|------|----------------|
-| DB01 | 采集覆盖总览 | 全球覆盖热力、按国家/类型/日期统计、趋势 | CH01, CH02, CH03, CH13（国家/类型/日期筛选） |
-| DB02 | 覆盖下钻与明细 | 影像/DEM 覆盖分布 + 卫星影像下钻明细表 | CH04, CH05, CH12, CH13（国家/日期范围） |
-| DB03 | 道路与 POI 分析 | 道路长度、POI 数量与分类、Overture vs OSM | CH06, CH07, CH08, CH09, CH10, CH13 |
-| DB04 | 人口与综合指标 | 人口分布、与区域维度联动 | CH11, CH13 及可选 CH02 |
+| 18 (DB01) | 瓦片采集覆盖总览 | 全球覆盖热力、按国家/类型/日期统计、趋势、明细下钻 | CH-DB01-01, CH-DB01-02, CH-DB01-03, CH-DB01-04, CH-DB01-06, CH-DB01-08, CH-DB01-09 |
+| 19 (DB02) | 道路采集覆盖总览 | 全球道路采集覆盖热力、趋势及统计 | CH-ROAD-01, CH-ROAD-02, CH-ROAD-03, CH-ROAD-04, CH-ROAD-05 |
+| 20 (DB03) | POI采集覆盖总览 | 全球POI采集覆盖热力、分类占比及趋势 | CH-POI-01, CH-POI-02, CH-POI-03, CH-POI-04, CH-POI-05 |
+| 22 (DB04) | 人口与综合指标 | 全球人口分布热力、区域排名及综合指标 | CH-POP-01, CH-POP-02, CH-POP-03, CH-POP-04 |
 
-##### 4.6.4.2 布局建议
 
-- **DB01（采集覆盖总览）**  
-  - 第 1 行：Native Filter（国家、类型、日期 dt）占一整行。  
-  - 第 2 行：CH01（覆盖热力-国家面）大图，占 12 列。  
-  - 第 3 行：CH02（按国家柱状）6 列 + CH03（按日期趋势）6 列。  
+##### 4.6.4.2 布局说明
 
-- **DB02（覆盖下钻与明细）**  
-  - 第 1 行：Native Filter（国家、date_from、date_to）。  
-  - 第 2 行：CH04（卫星影像覆盖）8 列 + CH05（DEM 瓦片）4 列。  
-  - 第 3 行：CH12（卫星影像下钻明细表）12 列，表格可占多行高度。  
+所有看板均采用 **120 高度对齐的复合布局模式**：
 
-- **DB03（道路与 POI）**  
-  - 第 1 行：Native Filter（国家、月份 mo、日期 date_refreshed）。  
-  - 第 2 行：CH06、CH07 各 6 列。  
-  - 第 3 行：CH08、CH09 各 6 列。  
-  - 第 4 行：CH10 占 12 列。  
+- **第 1 行 (核心监控区)**：左侧 KPI 栏 (w=3, h=120) + 右侧大地图 (w=9, h=120)
+  - KPI 栏包含：2 个 KPI 卡片 (各 h=20) + 1 个分布图/排行榜 (h=80)
+  - 地图使用 deck_polygon 类型，配置 autozoom=true
 
-- **DB04（人口与综合）**  
-  - 第 1 行：Native Filter（国家等）。  
-  - 第 2 行：CH11 占 12 列；可选 CH02 做对比。  
+- **第 2 行 (趋势分析区)**：趋势图表 (w=12, h=50)
+  - DB01：采集量按时间趋势 (Area Chart)
+  - DB02：道路长度增长趋势 (Area Chart)
+  - DB03：POI 采集增长趋势 (Area Chart)
+  - DB04：预留扩展位置
+
+- **第 3 行 (明细区，仅 DB01)**：排行榜 + 明细表 (w=4+8, h=60)
 
 （Superset 网格为 12 列，可依实际拖拽微调。）
 
 ##### 4.6.4.3 数据联动
 
 - **Native Filter 联动**：所有看板使用「Native Filter」组件，绑定维度列（如 country, dt, type, mo, date_refreshed）。在 Filter 上勾选 **Cross-filter**（或「Scoping」中勾选要联动的图表），则选择国家/日期/类型后，该看板内所有勾选联动的图表自动带相同过滤条件重新查询。  
-- **图表 → 图表**：若需「点击热力图上某国家再驱动明细表」，可用 **Cross-filter**：CH01 的维度列（如 country_code3）设为「Emit filter when clicked」，目标图表 CH12 勾选接收该 Cross-filter；或同一看板内统一依赖同一批 Native Filter，通过筛选器联动。  
+- **图表 → 图表**：若需「点击热力图上某国家再驱动明细表」，可用 **Cross-filter**：CH-DB01-01 的维度列（如 country_code3）设为「Emit filter when clicked」，目标图表 CH-DB01-09 勾选接收该 Cross-filter；或同一看板内统一依赖同一批 Native Filter，通过筛选器联动。  
 - **参数传递**：DS01/DS15 的 SQL 中 `{{ dt }}`、`{{ country }}`、`{{ date_from }}`/`{{ date_to }}` 对应 Superset 的「Filter」或「Template parameters」，在数据集「Edit」中声明参数名与类型，在看板里将 Native Filter 映射到该参数即可。
 
 按上述步骤配置后，即可在本地 Docker Compose 验证数据源、数据集、图表与看板，再在生产 K8s 中部署同一套配置（可通过 Superset 导出/导入 YAML 或备份元数据库做迁移）。
@@ -638,12 +640,10 @@ export function embedBiDashboard(options) {
 | 列名 | 类型 | 来源 | 说明 |
 |------|------|------|------|
 | country_code3 | varchar(3) | gadm_country_boundary.country_code3 | 国家 3 字母 ISO 代码（原始值） |
-| country | varchar(3) | `g.country_code3 AS country` | **与 DS-DB01-02 列名一致**，供地图 Emit Cross-filter 使用；若列名不同则点击地图后其他图表不会过滤 |
+| country | varchar(3) | `g.country_code3 AS country` | **供地图 Emit Cross-filter 使用** |
 | country_name | varchar | gadm_country_boundary.country_name | 国家中/英文名称，用于 Tooltip 展示 |
-| geom | geometry(MultiPolygon) | gadm_country_boundary.geom | 国家边界多边形，Superset 中标记为 **Spatial（Geometry）** |
-| google_map_count | bigint | `SUM(CASE WHEN type='google_map' ...)` | google_map 类型采集量 |
-| google_earth_count | bigint | `SUM(CASE WHEN type='google_earth' ...)` | google_earth 类型采集量 |
-| total_count | bigint | `SUM(count_nums)` | 两种类型合计采集量，作为地图着色主指标 |
+| geojson | STRING | `ST_AsGeoJSON(ST_Simplify(g.geom, 0.1))` | 简化后的国家边界 GeoJSON，用于 deck.gl 渲染 |
+| crawl_count | bigint | `SUM(count_nums)` | 采集总量，作为地图着色主指标 |
 
 **SQL**
 
@@ -651,25 +651,17 @@ export function embedBiDashboard(options) {
 -- ds_db01_coverage_world_map
 -- crawler_tile_all.country 为 3 字母 ISO 代码，直接与 country_code3 关联
 -- gadm_country_boundary.level=0 对应国家级（共 263 条），level 1-4 为省/市/区/村级
--- 必须输出 country 列（与 DS-DB01-02 列名一致），供 Cross-filter 使用
 SELECT
-    g.country_code3,
-    g.country_code3 AS country,
     g.country_name,
-    g.geom,
-    COALESCE(c.google_map_count,   0) AS google_map_count,
-    COALESCE(c.google_earth_count, 0) AS google_earth_count,
-    COALESCE(c.total_count,        0) AS total_count
+    g.country_code3,
+    ST_AsGeoJSON(ST_Simplify(g.geom, 0.1)) as geojson,
+    COALESCE(t.total_count, 0) as crawl_count
 FROM gadm_country_boundary g
 LEFT JOIN (
-    SELECT
-        country,
-        SUM(count_nums)                                          AS total_count,
-        SUM(CASE WHEN type = 'google_map'   THEN count_nums END) AS google_map_count,
-        SUM(CASE WHEN type = 'google_earth' THEN count_nums END) AS google_earth_count
+    SELECT country, SUM(count_nums) as total_count
     FROM crawler_tile_all
     GROUP BY country
-) c ON g.country_code3 = c.country
+) t ON g.country_code3 = t.country
 WHERE g.level = 0
 ```
 
@@ -677,17 +669,16 @@ WHERE g.level = 0
 
 | 配置项 | 操作 |
 |--------|------|
-| `geom` 列 | Edit Dataset → Columns → 将 `geom` 的 Type 改为 **Spatial（Geometry）** |
-| 默认指标 | 将 `total_count` 设为默认聚合指标（SUM） |
-| `country` 列 | 标记为 **Dimension**（维度），用于 Cross-filter 实体/Emit 列 |
+| `geojson` 列 | Edit Dataset → Columns → 将 `geojson` 的 Type 改为 **Spatial（Geometry）** |
+| 默认指标 | 将 `crawl_count` 设为默认聚合指标（SUM） |
+| `country_code3` 列 | 标记为 **Dimension**（维度），用于 Cross-filter 实体/Emit 列 |
 | `country_name` 列 | 标记为 **Dimension**，用于 Tooltip 展示 |
-| `google_map_count`/`google_earth_count` 列 | 标记为 **Metric-ready**，可直接作为 Tooltip 追加指标 |
 
 **Filters & Controls 配置**
 
 | 配置项 | 说明 |
 |--------|------|
-| **Cross-filter（Emit）** | CH01 勾选 **Emit filter when clicked**，Emit 列选 **`country`**（不可选 country_code3），与 DS-DB01-02 列名一致 |
+| **Cross-filter（Emit）** | CH-DB01-01 勾选 **Emit filter when clicked**，Emit 列选 **`country_code3`** |
 | **时间/类型筛选** | 可选：在子查询 WHERE 中增加 `AND (dt = '{{ dt }}' OR '{{ dt }}' = '')` 和 `AND (type = '{{ type }}' OR '{{ type }}' = '')`，在 Superset 数据集 Edit → Parameters 中声明 `dt`、`type` 为 Template parameters，由 Native Filter 映射 |
 | **无传参等价全量** | 子查询不加 WHERE 条件时，输出所有日期和类型的汇总值 |
 
@@ -695,22 +686,23 @@ WHERE g.level = 0
 
 | # | 确认项 | 结论 |
 |---|--------|------|
-| 1 | `crawler_tile_all.country` 代码格式 | 3 字母 ISO 代码，JOIN 条件 `g.country_code3 = c.country` 正确 |
+| 1 | `crawler_tile_all.country` 代码格式 | 3 字母 ISO 代码，JOIN 条件 `g.country_code3 = t.country` 正确 |
 | 2 | `gadm_country_boundary.level` 国家级别 | `level = 0` 共 263 条（国家级），`WHERE g.level = 0` 过滤正确 |
-| 3 | `type` 枚举值 | 仅 `google_map` / `google_earth` 两个值，按 type 分列展开无遗漏 |
-| 4 | 无需 country_code2 兜底 | 3 字母 JOIN 已全覆盖，去掉 `OR g.country_code2 = c.country` |
+| 3 | 数据集实际名称 | `crawler_coverage_polygon_v2`（虚拟数据集，SQL 定义） |
 
 ##### B.1.3.2 DS-DB01-02：覆盖量统计（纯数值，用于其余图表）
 
 - **类型**：Table Dataset（物理表直连）
-- **数据集名称**：`ds_db01_crawler_tile_all`
+- **数据集名称**：`ds_crawler_tile_all`（实际：`crawler_tile_all`）
 - **来源**：`crawler_tile_all`
 
 | 字段 | 类型 | 含义 |
 |------|------|------|
+| country_name | varchar | 国家名称（关联 dim_country_name） |
 | country | varchar(3) | 国家代码，3 字母 ISO（维度） |
 | type | varchar(100) | 采集类型，枚举：`google_map` / `google_earth`（维度） |
 | dt | varchar(100) | 日期分区，格式 `YYYYMMDD`，如 `20260101`（时间轴） |
+| dt_date | date | 计算列：`TO_DATE(dt, 'YYYYMMDD')`（用于时间序列分析） |
 | count_nums | integer | 采集量（指标，SUM） |
 
 > **配置说明**（已基于实际数据确认）：
@@ -726,532 +718,266 @@ DB01 规划 **9 张图表 + 1 组筛选器**。
 
 | 图表 ID | 图表名称 | Superset 图表类型 | 数据集 | 主要配置 | 说明 |
 |---------|----------|-------------------|--------|----------|------|
-| CH-DB01-01 | 全球采集覆盖热力图 | `world_map` | DS-DB01-01 | 实体列：**country**；颜色列：total_count；Tooltip：country_name, google_map_count, google_earth_count；**Emit cross filter 列选 country** | 全球视角世界地图，按 total_count 着色；点击某国触发 Cross-filter，驱动国家详情地图、明细表及其余图表联动 |
+| CH-DB01-01 | 全球瓦片采集覆盖热力图 | `deck_polygon` | DS-DB01-01 | 几何列：geojson；颜色/权重：crawl_count；Emit 列：country | 全球视角热力图，按 crawl_count 着色；点击某国触发 Cross-filter |
 | CH-DB01-02 | 总采集量 KPI | `big_number_total` | DS-DB01-02 | 指标：SUM(count_nums)；副标题：「全量采集瓦片数」 | — |
 | CH-DB01-03 | 覆盖国家数 KPI | `big_number_total` | DS-DB01-02 | 指标：COUNT_DISTINCT(country)；副标题：「已覆盖国家/地区数」 | — |
 | CH-DB01-04 | 采集量按时间趋势 | `echarts_area` | DS-DB01-02 | X：dt（Temporal）；Y：SUM(count_nums)；Series：type；堆叠面积 | — |
 | CH-DB01-06 | 类型覆盖量 Treemap | `treemap_v2` | DS-DB01-02 | 分组：type；指标：SUM(count_nums)；颜色渐变 | — |
-| CH-DB01-08 | 国家覆盖量排行榜 | `table` | DS-DB01-02 | 列：country, type, SUM(count_nums) 采集量；按采集量降序；分页 20 行；启用条形图列 | — |
-| CH-DB01-09 | 采集明细下钻表 | `table` | DS-DB01-02 | 列：country, type, dt, count_nums；按 dt 降序；分页 50 行；启用搜索 | 接收 Cross-filter / Native Filter 过滤；点击世界地图某国后仅显示该国按日期的明细行 |
-| **CH-DB01-10** | **国家详情地图** | **`deck_geojson`** | **DS-DB01-01** | GeoJSON 列：**geojson**（`ST_AsGeoJSON(g.geom)`）；fill_color 半透明青色；底图 mapbox light | **接收** world_map Cross-filter / Native Filter；筛选国家后仅渲染该国边界多边形 |
-| CH-DB01-F | 筛选器组 | Native Filter | DS-DB01-02 | 筛选项：采集类型 type **Radio**、国家 country 多选搜索；勾选 Cross-filter；**isInstant: true** | — |
+| CH-DB01-08 | 国家覆盖量排行榜 | `table` | DS-DB01-02 | 列：country_name, type, SUM(count_nums) 采集量；按采集量降序；分页 20 行；启用条形图列 | — |
+| CH-DB01-09 | 采集明细下钻表 | `table` | DS-DB01-02 | 列：country_name, type, dt, count_nums；按 dt 降序；分页 50 行；启用搜索 | 接收 Cross-filter / Native Filter 过滤；点击热力图某国后仅显示该国按日期的明细行 |
+| CH-DB01-F | 筛选器组 | Native Filter | DS-DB01-02 | 筛选项：采集类型 type **Radio**、国家 country_name 多选搜索；勾选 Cross-filter；**isInstant: true** | — |
 
-**下钻交互流程（world_map → deck_geojson + 明细表）**
+**下钻交互流程（热力图 → 明细表）**
 
 ```mermaid
 flowchart LR
-  A[用户点击 world_map 某国家] --> B[CH-DB01-01 Emit Cross-filter<br/>country = 选中国家]
-  B --> C[CH-DB01-10 deck_geojson<br/>仅渲染该国边界多边形]
-  B --> D[KPI / 趋势 / Treemap<br/>联动过滤到该国]
-  B --> E[CH-DB01-08 排行榜<br/>仅显示该国行]
-  B --> F[CH-DB01-09 明细下钻表<br/>展示该国按 dt+type 的明细行]
-  F --> G[用户可进一步<br/>用 Native Filter 筛选 type]
+  A[用户点击热力图某国家] --> B[CH-DB01-01 Emit Cross-filter<br/>country = 选中国家]
+  B --> C[KPI / 趋势 / Treemap<br/>联动过滤到该国]
+  B --> D[CH-DB01-08 排行榜<br/>仅显示该国行]
+  B --> E[CH-DB01-09 明细下钻表<br/>展示该国按 dt+type 的明细行]
+  E --> F[用户可进一步<br/>用 Native Filter 筛选 type]
 ```
 
-> **deck_geojson 说明**：使用 `deck_geojson`（Deck.gl GeoJSON 图层）替代 `country_map`。原因：`country_map` 的 `select_country` 是静态配置参数，无法被 Cross-filter 动态切换。`deck_geojson` 直接渲染 DS-DB01-01 的 `geojson` 列（由 `ST_AsGeoJSON(g.geom)` 生成），当 Cross-filter 或 Native Filter 过滤到某国时，查询仅返回该国数据行，地图自然只渲染对应国家的边界多边形。
+---
+
+##### B.1.5 看板布局（实际运行版 - Dashboard ID: 18）
+
+看板采用了高效的"指标 + 地图"三栏复合对齐布局，消除了视觉空隙：
+
+1. **第一层：核心监控区 (Row ID: ROW_MAP_KPI)**
+   - **左侧复合列 (Column ID: COLUMN_LEFT, w=2)**：
+     - **总采集量** (CH-DB01-02, ID 105, h=20)
+     - **覆盖国家数** (CH-DB01-03, ID 106, h=20)
+     - **采集类型覆盖量** (CH-DB01-06, ID 109, Treemap, h=46) —— 位于指标下方。
+   - **右侧大地图 (w=10)**：**全球瓦片采集覆盖热力图** (CH-DB01-01, ID 126, deck_polygon, h=91)。
+
+2. **第二层：趋势分析区 (Row ID: ROW_TREND)**
+   - **采集量按时间趋势** (CH-DB01-04, ID 107, Area Chart, w=12, h=50)。
+
+3. **第三层：排行与明细区 (Row ID: ROW_TABLES)**
+   - **国家覆盖量排行榜** (CH-DB01-08, ID 111, Table, w=4, h=60)。
+   - **采集明细下钻表** (CH-DB01-09, ID 123, Table, w=8, h=60)。
 
 ---
 
-#### B.1.5 看板布局
+### B.2 DB02 道路采集覆盖总览
 
-Superset 网格 12 列。看板分为 **ROW_1**（统计总览区）、**ROW_2**（国家下钻区：deck_geojson + 明细表）两个顶层行。
-
-**视觉布局**
-
-```
-┌─────────────────── ROW_1 ────────────────────┬────────────┐
-│ COLUMN_MAIN (w=9)                            │CHART_TABLE │
-│ ┌─ ROW_A ──────────────────────────────────┐ │ (w=3)      │
-│ │ COLUMN_KPI(w=2) │  CHART_MAP (w=7)       │ │ 国家覆盖   │
-│ │ ┌─────────────┐ │  全球采集覆盖热力图     │ │ 量排行榜   │
-│ │ │ KPI总采集量  │ │  world_map             │ │ (h=90)     │
-│ │ │ (h=26)      │ │  [DS-DB01-01]          │ │[DS-DB01-02]│
-│ │ ├─────────────┤ │  (h=54)                │ │            │
-│ │ │ KPI覆盖国家 │ │  ↓ 点击国家            │ │            │
-│ │ │ (h=26)      │ │  ↓ Cross-filter        │ │            │
-│ │ └─────────────┘ │                        │ │            │
-│ └─────────────────┴────────────────────────┘ │            │
-│ ┌─ ROW_B ──────────────────────────────────┐ │            │
-│ │ CHART_AREA (w=6)  │ CHART_TREEMAP (w=3)  │ │            │
-│ │ 采集量按时间趋势   │ 采集类型覆盖量        │ │            │
-│ │ [DS-DB01-02]       │ [DS-DB01-02]         │ │            │
-│ │ (h=32)             │ (h=32)               │ │            │
-│ └────────────────────┴─────────────────────┘ │            │
-└──────────────────────────────────────────────┴────────────┘
-                          ↓ Cross-filter 传递 country
-┌──────────────────── ROW_2 ────────────────────────────────┐
-│ CHART_COUNTRY_MAP (w=5)       │ CHART_DETAIL (w=7)        │
-│ 国家详情地图 deck_geojson     │ 采集明细下钻表             │
-│ [DS-DB01-01]                  │ [DS-DB01-02]               │
-│ (h=50)                        │ country|type|dt|count_nums │
-│ 显示选中国家行政区划轮廓      │ (h=50)                     │
-│                               │ 该国按日期的明细行          │
-└───────────────────────────────┴───────────────────────────┘
-```
-
-**position_json 节点结构**
-
-| 节点类型 | 节点 ID | children | 宽度 | 高度 | chartId | 数据集 | 说明 |
-|----------|---------|----------|------|------|---------|--------|------|
-| ROOT | ROOT_ID | [GRID_ID] | — | — | — | — | 根节点 |
-| GRID | GRID_ID | **[ROW_1, ROW_2]** | — | — | — | — | 两个顶层行 |
-| HEADER | HEADER_ID | — | — | — | — | — | text: 采集覆盖总览 |
-| ROW | ROW_1 | [COLUMN_MAIN, CHART_TABLE] | — | — | — | — | 统计总览区：左 9 列 + 右 3 列 |
-| COLUMN | COLUMN_MAIN | [ROW_A, ROW_B] | 9 | — | — | — | 左侧主列 |
-| ROW | ROW_A | [COLUMN_KPI, CHART_MAP] | — | — | — | — | 上区：KPI + world_map |
-| COLUMN | COLUMN_KPI | [CHART_KPI_TOTAL, CHART_KPI_COUNTRY] | 2 | — | — | — | KPI 纵列 |
-| CHART | CHART_KPI_TOTAL | [] | 2 | 26 | **105** | DS-DB01-02 | 总采集量 |
-| CHART | CHART_KPI_COUNTRY | [] | 2 | 26 | **106** | DS-DB01-02 | 覆盖国家数 |
-| CHART | CHART_MAP | [] | 7 | 54 | **104** | **DS-DB01-01** | 全球采集覆盖热力图（**world_map**，Emit Cross-filter） |
-| ROW | ROW_B | [CHART_AREA, CHART_TREEMAP] | — | — | — | — | 下区：趋势 + Treemap |
-| CHART | CHART_AREA | [] | 6 | 32 | **107** | DS-DB01-02 | 采集量按时间趋势 |
-| CHART | CHART_TREEMAP | [] | 3 | 32 | **109** | DS-DB01-02 | 采集类型覆盖量 |
-| CHART | CHART_TABLE | [] | 3 | 90 | **111** | DS-DB01-02 | 国家覆盖量排行榜（右侧全高） |
-| ROW | **ROW_2** | **[CHART_COUNTRY_MAP, CHART_DETAIL]** | — | — | — | — | **国家下钻区**（新增） |
-| CHART | **CHART_COUNTRY_MAP** | [] | 5 | 50 | **122** | **DS-DB01-01** | **国家详情地图**（deck_geojson，接收 Cross-filter）（新增） |
-| CHART | **CHART_DETAIL** | [] | 7 | 50 | **123** | DS-DB01-02 | **采集明细下钻表**（新增） |
-
-> **数据集说明**：
-> - **DS-DB01-01**（对应主方案 DS01）：**CHART_MAP**（world_map）和 **CHART_COUNTRY_MAP**（deck_geojson）均使用，提供 geojson（`ST_AsGeoJSON(g.geom)` 国家边界面）+ 覆盖指标（total_count 等），详见 B.1.3.1。
-> - **DS-DB01-02**（对应主方案 DS03）：其余 7 张图表（KPI、趋势、Treemap、排行榜、明细下钻表）均使用，物理表 `crawler_tile_all` 直连，详见 B.1.3.2。
-> - 两个数据集通过 **`country`** 列名一致实现 Cross-filter 联动（详见 B.1.6）。
-
-**下钻交互说明**
-
-| 操作 | 触发 | 结果 |
-|------|------|------|
-| 点击 world_map 上某国家 | CHART_MAP Emit Cross-filter（country = 选中国家） | **CHART_COUNTRY_MAP 仅渲染该国边界多边形**；ROW_1 内 KPI/趋势/Treemap/排行 + ROW_2 明细表同步过滤到该国 |
-| 再次点击同一国家（或点空白处） | 清除 Cross-filter | deck_geojson 恢复全部国家；其余图表恢复全量数据 |
-| 通过 Native Filter 选择国家 | 筛选器联动 | 全部图表（含 world_map、deck_geojson、明细表）过滤到该国 |
-| 通过 Native Filter 选择采集类型 | 筛选器联动 | 明细表仅显示该类型行；KPI/趋势/Treemap 同步过滤 |
-
-**实施要点**
-
-1. GRID_ID.children 为 `["ROW_1", "ROW_2"]`，ROW_1 保持现有统计总览结构不变。
-2. **ROW_2** 为新增行，含 CHART_COUNTRY_MAP（w=5）+ CHART_DETAIL（w=7），共 12 列。
-3. **CHART_MAP**（CH-DB01-01，world_map）保持不变，勾选 **Emit filter when clicked**，Emit 列为 **`country`**。
-4. **CHART_COUNTRY_MAP**（CH-DB01-10，deck_geojson）接收 Cross-filter，使用 DS-DB01-01 的 `geojson` 列渲染国家边界多边形。筛选到某国后，查询仅返回该国数据行，地图自然只渲染对应国家。
-5. **CHART_DETAIL**（CH-DB01-09）使用 DS-DB01-02，维度列 country + type + dt，指标列 count_nums，按 dt 降序、分页 50 行。
-6. 两个新图表创建后，需将其 chartId 分别填入 ROW_2 和 Native Filter 的 chartsInScope 中。
-
-**未选国家时国家详情地图与采集明细下钻表保持为空**
-
-需求：当未在「国家」筛选器或世界地图上选择任何国家时，CH-DB01-10（国家详情地图）和 CH-DB01-09（采集明细下钻表）应显示为空，不展示全量数据。
-
-实现思路：为上述两张图表使用**专用 Virtual Dataset**，在 SQL 中通过 Superset 的 Jinja 宏 `filter_values('country')` 判断是否有国家筛选；无选中时加 `WHERE 1=0` 使查询返回 0 行（需开启 ENABLE_TEMPLATE_PROCESSING）。世界地图、KPI、趋势等仍使用原 DS-DB01-01/02，不受影响。
-
-| 图表 | 原数据集 | 专用数据集（需新建） | SQL 条件 |
-|------|----------|----------------------|----------|
-| CH-DB01-10 国家详情地图 | DS-DB01-01 (id=22) | ds_db01_country_map_require_country | 在原有 SQL 外包一层 sub，末尾加 `WHERE {% if filter_values('country') %} sub.country IN {{ filter_values('country') \| where_in }} {% else %} 1=0 {% endif %}` |
-| CH-DB01-09 采集明细下钻表 | DS-DB01-02 (id=23) | ds_db01_detail_require_country | 在原有 SQL 末尾加 `WHERE {% if filter_values('country') %} c.country IN {{ filter_values('country') \| where_in }} {% else %} 1=0 {% endif %}` |
-
-**手动操作步骤（在 Superset 界面完成）**：
-
-1. **Data → Datasets → + Dataset → Virtual**，创建 `ds_db01_country_map_require_country`：
-   - Database：crawler_db，Schema：public。
-   - SQL：以 DS-DB01-01 的完整 SQL 为子查询，别名 `sub`，外层 `SELECT sub.*`，并加上上述 `WHERE {% if filter_values('country') %} ... {% else %} 1=0 {% endif %}`。
-   - 保存后编辑列/类型与 DS-DB01-01 一致（含 geojson 列）。
-2. **同上**，创建 `ds_db01_detail_require_country`：
-   - SQL：与 DS-DB01-02 相同，在末尾增加 `WHERE {% if filter_values('country') %} c.country IN {{ filter_values('country') | where_in }} {% else %} 1=0 {% endif %}`（注意表别名 `c` 与现有 SQL 一致）。
-3. **Charts**：编辑「国家详情地图」(122)，将 Data source 改为 `ds_db01_country_map_require_country`；编辑「采集明细下钻表」(123)，将 Data source 改为 `ds_db01_detail_require_country`。
-4. 确认看板「国家」筛选器与 Cross-filter 的 Scoping 仍包含 122、123；未选国家时两图表为空，选国家后正常有数。
-
----
-
-#### B.1.6 Native Filter 联动配置
-
-| 筛选器名称 | 绑定字段 | 数据集 | 联动图表 | 说明 |
-|-----------|----------|--------|----------|------|
-| 采集类型 | type | DS-DB01-02 | CH-DB01-02/03/04/06/08/09 | Radio 控件，枚举：`google_map` / `google_earth`；不选等价全量 |
-| 国家 | country | DS-DB01-02 | CH-DB01-02/03/04/06/08/09/**10** | 多选搜索框；与 world_map Cross-filter 双向联动；CH-DB01-10 deck_geojson 也接收 |
-
-> **Cross-filter 说明**：
-> - CH-DB01-01（world_map）勾选 **Emit cross filter**，Emit 列选 **`country`**。
-> - CH-DB01-02/03/04/06/08/09/**10** 勾选**接收**该 Cross-filter。
-> - CH-DB01-10（deck_geojson）使用 DS-DB01-01，列名同为 `country`，可直接接收。
-> - 实现「点击 world_map 某国 → deck_geojson 仅渲染该国边界 + 看板全部图表同步过滤」。
-
----
-
-#### B.1.9 故障排查：点击国家后看板数据不过滤
-
-**现象**：DB01 点击地图某国家后，筛选条件区出现国家条件，但 KPI、趋势、排行等图表数据未随之过滤。
-
-**原因**：Cross-filter 的**发出列名**与**接收图表使用的列名**不一致。地图数据集 DS-DB01-01 若仅暴露 `country_code3`，而其余图表使用 DS-DB01-02 的 `country`，Superset 不会将地图发出的筛选应用到这些图表。
-
-**修复步骤**（在 Superset 中操作）：
-
-1. **数据集 DS-DB01-01**  
-   - 编辑 Virtual Dataset 的 SQL，在 SELECT 中增加：`g.country_code3 AS country`（与上文 B.1.3.1 SQL 一致）。  
-   - 保存后确认该数据集存在 **country** 列。
-
-2. **地图图表 CH-DB01-01**  
-   - 编辑图表 → 实体/维度列改为 **country**（不再用 country_code3）。  
-   - 在「Interactions」或「Cross-filter」中勾选 **Emit filter when clicked**，Emit 列选择 **country**。
-
-3. **其余图表 CH-DB01-02/03/04/06/08/09/10**
-   - 每张图表编辑 → 在「Interactions」/「Cross-filter」中勾选 **Receive filters from other charts**（或等价选项），并确保作用列为本图表的 **country**。  
-   - 若看板有「Filter scoping」配置，确认这些图表均在「Scoping」范围内。
-   - **CH-DB01-09（明细下钻表）、CH-DB01-10（deck_geojson）**：特别注意也需在 Scoping 范围内，否则点击 world_map 后不会联动。
-
-4. **验证**  
-   - 保存看板后，点击地图上某一国家，确认顶部/侧边出现国家筛选条件，且总采集量 KPI、趋势图、国家排行及**明细下钻表**数据仅显示该国。
-
----
-
-#### B.1.7 创建步骤（参考顺序）
-
-1. **确认数据源**：Data → Databases，确认 `crawler_db`（PostgreSQL）连接正常，可在 SQL Lab 执行 `SELECT count(*) FROM crawler_tile_all` 验证。
-2. **创建 DS-DB01-01**：Data → Datasets → + → Virtual（SQL）→ 粘贴 D.3.1 SQL → 保存 → Edit Dataset，将 `geom` 列 Type 改为 `GEOMETRY`，将 `total_count` 设为默认指标（SUM）。
-3. **创建 DS-DB01-02**：Data → Datasets → + → Physical Table → 选 `crawler_db` / `public` / `crawler_tile_all` → 保存 → Edit Dataset，将 `dt` 列 Type 改为 `TEMPORAL`，格式 `%Y%m%d`；将 `count_nums` 默认聚合设为 `SUM`。
-4. **依次创建 9 张图表**（建议顺序：CH-DB01-02/03 KPI → CH-DB01-01 world_map → CH-DB01-04 趋势 → CH-DB01-06 Treemap → CH-DB01-08 排行 → **CH-DB01-10 deck_geojson** → **CH-DB01-09 明细下钻表**）。
-5. **新建看板**：Dashboard → + → 命名「采集覆盖总览」，将 9 张图表拖入，按 B.1.5 布局排列：ROW_1 放统计总览（world_map+KPI+趋势+Treemap+排行榜），**ROW_2 放 deck_geojson（w=5）+ 明细下钻表（w=7）**。
-6. **配置 Native Filter**：看板编辑模式 → Filters 面板 → 按 B.1.6 添加 2 个筛选器（采集类型、国家），勾选对应联动图表（含 CH-DB01-09、CH-DB01-10）和 Cross-filter。
-7. **端到端验证**：
-   - 点击 world_map 某国 → 确认 **deck_geojson 仅渲染该国边界**、KPI、趋势、排行、明细下钻表均联动过滤到该国。
-   - 切换 type 筛选 → 确认 Treemap 与明细表随之变化。
-   - 在明细下钻表中确认可按 dt 查看该国每日采集量。
-   - 再次点击同一国家或点空白处 → 确认 deck_geojson 恢复全部国家、其余图表恢复全量。
-
----
-
-#### B.1.8 已确认事项
-
-最后查验实际：2026-02-26
-
-以下 5 条已通过直接查询 crawler_db 核实，规划设计无需调整。
-
-| # | 确认项 | 查询结论 | 对规划的影响 |
-|---|--------|---------|------------|
-| 1 | `crawler_tile_all.country` 代码格式 | **3 字母 ISO 代码**（ARE、ARG、JPN 等） | DS-DB01-01 JOIN 条件 `g.country_code3 = c.country` 正确，无需追加 country_code2 兜底 |
-| 2 | `crawler_tile_all.dt` 格式 | **`YYYYMMDD`**，如 `20260101` | DS-DB01-02 时间格式设置 `%Y%m%d` 正确 |
-| 3 | `crawler_tile_all.type` 枚举值 | **仅 2 个**：`google_earth`、`google_map` | Treemap/堆叠图无需限 Top N；筛选器只需 2 个选项，可用 Radio 控件替代下拉 |
-| 4 | `gadm_country_boundary.level` 国家级别 | **`level = 0`**，共 263 条（国家级） | DS-DB01-01 `WHERE g.level = 0` 过滤正确 |
-| 5 | `crawler_db` SQL Lab 执行权限 | **数据库本身可查**，但 `superset-mcp` 包的 `execute_sql` 工具调用 `/api/v1/sqllab/execute/` 时**未携带 Session Cookie**，导致 Superset 的 CSRF 校验失败（400）；已通过带 Cookie 的直接 API 调用验证数据可达 | 规划设计不受影响；Superset 界面 SQL Lab 正常可用；若需通过 MCP 执行 SQL，需等 `superset-mcp` 包修复 CSRF/Session 处理，或通过 Shell 脚本绕过 |
-
-> **关于第 5 条（CSRF 问题）的技术细节**：
-> Superset 的 `/api/v1/sqllab/execute/` 接口同时要求：① `Authorization: Bearer <JWT>` ② `X-CSRFToken: <csrf>` ③ 对应的 Session Cookie（三者缺一不可）。
-> `superset-mcp` 包目前只传了 JWT，未维护 Session Cookie，所以 Superset 返回「CSRF session token is missing」400 错误。
-> 这是 **`superset-mcp` 的已知局限**，不影响 Superset 本身的功能与数据。
-
----
-
-### B.2 DB02 覆盖下钻与明细——详细实施规划
-
-> **参考**：本规划延续 4.6.4.2 的 DB02 布局建议，与 DB01 一致采用 **12 列网格**；图表组成见 4.6.4.1（CH04、CH05、CH12、CH13），数据集见 4.6.2（DS04、DS05、DS15、DS13/DS14）。
-
----
-
-#### B.2.1 看板定位与目标
+#### B.2.1 数据集设计 (DS-ROAD-01)
 
 | 项目 | 说明 |
 |------|------|
-| 看板名称 | 覆盖下钻与明细 |
-| 看板 ID（规划） | DB02 |
-| 数据源 | crawler_db（PostgreSQL） |
-| 核心问题 | ① 卫星影像 / DEM 瓦片在空间上的覆盖分布？② 选定国家/日期后，卫星影像明细列表有哪些？ |
-| 图表组成 | CH04（卫星影像覆盖）、CH05（DEM 瓦片）、CH12（卫星影像下钻明细表）、CH13（筛选器） |
+| **类型** | Virtual Dataset（SQL） |
+| **数据集名称** | `ds_road_coverage_world_map` |
+| **定位** | 同时提供**国家边界几何（geom）与道路长度指标**，用于渲染全球道路采集覆盖热力图 |
+| **依赖表** | `app_osm_road_length`（道路长度统计）、`gadm_country_boundary`（国家边界几何） |
 
----
+**输出列**
 
-#### B.2.2 涉及表与字段速查
+| 列名 | 类型 | 来源 | 说明 |
+|------|------|------|------|
+| country_code3 | varchar(3) | gadm_country_boundary.country_code3 | 国家 3 字母 ISO 代码 |
+| country | varchar(3) | `g.country_code3 AS country` | 供地图 Emit Cross-filter 使用 |
+| country_name | varchar | gadm_country_boundary.country_name | 国家名称，用于 Tooltip |
+| geom | geometry(MultiPolygon) | gadm_country_boundary.geom | 国家边界多边形 |
+| total_road_length | double | `SUM(road_length_km)` | 道路总长度（km） |
 
-| 表名 | 关键字段 | 用途 |
-|------|----------|------|
-| `satellite_images`（DS04） | id, file_path, coordinate_z/x/y, extent, provider, capture_date | 影像覆盖图 CH04、明细数据源 |
-| `dem_tiles_data`（DS05） | id, tile_id, level, geom, source_name | DEM 覆盖图 CH05 |
-| DS15（Virtual SQL） | 同 satellite_images 列 + Template 参数 date_from/date_to（可选 country 空间 JOIN） | 下钻明细表 CH12 |
-| `dim_country` / `dim_osm_country_relation`（DS13/DS14） | alpha2/alpha3、area_name 等 | 国家筛选器 CH13 |
+**SQL**
 
-> **说明**：`satellite_images` 表无 `country` 列，按国家过滤需与 `gadm_country_boundary` 做 `ST_Intersects(extent, geom)` 空间 JOIN，注意行数限制与性能（见 4.6.2 DS15 说明）。
-
----
-
-#### B.2.3 数据集规划
-
-（数据集见 4.6.2：DS04、DS05、DS15、DS13/DS14；具体建表/SQL 与 B.1.3 风格一致，此处从略。）
-
----
-
-#### B.2.4 图表规划
-
-（图表组成见 4.6.4.1：CH04、CH05、CH12、CH13；配置要点与 B.1.4 风格一致，此处从略。）
-
----
-
-#### B.2.5 看板布局
-
-与 4.6.4.2 一致，并参照 DB01/World Bank 的 12 列与嵌套方式：
-
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│ ROW 1：筛选器（1 行高）                                                     │
-│ [CH13] 国家（多选） | 开始日期 date_from | 结束日期 date_to | 应用/清除     │
-├────────────────────────────────────────────────────────────────────────────┤
-│ ROW 2：覆盖分布（建议 8～10 行高）                                          │
-│ [CH04 卫星影像覆盖] 8 列          │ [CH05 DEM 瓦片覆盖] 4 列                │
-├───────────────────────────────────┴────────────────────────────────────────┤
-│ ROW 3：下钻明细（建议 12～16 行高，可滚动）                                  │
-│ [CH12 卫星影像下钻明细表] 12 列                                             │
-└────────────────────────────────────────────────────────────────────────────┘
+```sql
+SELECT
+    g.country_code3,
+    g.country_code3 AS country,
+    g.country_name,
+    g.geom,
+    COALESCE(r.total_road_length, 0) AS total_road_length
+FROM gadm_country_boundary g
+LEFT JOIN (
+    SELECT
+        country_code,
+        SUM(road_length_km) AS total_road_length
+    FROM app_osm_road_length
+    GROUP BY country_code
+) r ON g.country_code3 = r.country_code OR g.country_code2 = r.country_code
+WHERE g.level = 0
 ```
 
-- **第 1 行**：Native Filter 占满 12 列，组件：国家（多选，绑定 DS13/DS14 或明细用参数）、date_from、date_to（绑定 DS15 的 Template 参数或时间列）。
-- **第 2 行**：CH04 占 8 列、CH05 占 4 列，便于以影像为主、DEM 为辅对比查看。
-- **第 3 行**：CH12 占 12 列全宽，高度适当加大以便分页浏览明细。
+> **关联说明**：`app_osm_road_length.country_code` 格式可能为 2 字母或 3 字母代码，需同时尝试与 `country_code3` 和 `country_code2` 关联。
 
----
+**Superset 数据集配置**
 
-#### B.2.6 position_json 参考（Superset 12 列）
+| 配置项 | 操作 |
+|--------|------|
+| `geom` 列 | 将 Type 改为 **Spatial（Geometry）** |
+| 默认指标 | 将 `total_road_length` 设为默认聚合（SUM） |
+| `country` 列 | 标记为 **Dimension**，用于 Cross-filter |
 
-以下为与 DB01 实施时一致的 12 列网格 + ROW/CHART 结构，便于直接复用或脚本写入。
-
-| 节点类型 | 节点 ID | 宽度 | 高度 | 说明 |
-|----------|----------|------|------|------|
-| GRID | GRID_ID | — | — | children: ROW_1, ROW_2, ROW_3 |
-| ROW | ROW_1 | — | — | 筛选器行；children: 由 Native Filter 占位，无 CHART |
-| ROW | ROW_2 | — | — | children: CHART_CH04, CHART_CH05 |
-| CHART | CHART_CH04 | 8 | 50 | 卫星影像覆盖（Deck.gl Geojson/Point） |
-| CHART | CHART_CH05 | 4 | 50 | DEM 瓦片覆盖（Deck.gl Polygon/Point） |
-| ROW | ROW_3 | — | — | children: CHART_CH12 |
-| CHART | CHART_CH12 | 12 | 70 | 卫星影像下钻明细表（Table） |
-
-- 筛选器不参与 position_json 的 CHART 布局，由看板「Filters」配置单独管理。
-- 高度单位为网格单位，可按实际观感微调（如 CH04/CH05 用 45～55，CH12 用 65～80）。
-
----
-
-#### B.2.7 Native Filter 联动配置
-
-| 筛选器名称 | 绑定对象 | 联动图表 | 说明 |
-|------------|----------|----------|------|
-| 国家 | DS13/DS14 的 country（alpha2/alpha3 或 area_name） | CH04、CH05、CH12 | 若 CH04/CH05 用物理表且无 country 列，需通过 Virtual Dataset + 空间 JOIN 传入 `country` 参数 |
-| 开始日期（date_from） | DS15 Template 参数 `date_from` | CH12 | 控制明细表时间下限 |
-| 结束日期（date_to） | DS15 Template 参数 `date_to` | CH12 | 控制明细表时间上限 |
-
-- 所有需联动的图表在 Native Filter 的「Scoping」中勾选对应图表，并启用 **Cross-filter**（若做「点击地图驱动明细」可再配 CH04 的 Emit filter）。
-
----
-
-#### B.2.8 创建步骤（参考顺序）
-
-1. **数据源与数据集**：确认 crawler_db 可访问；创建/配置 DS04（satellite_images）、DS05（dem_tiles_data）、DS15（下钻 SQL，含 `date_from`/`date_to` 及可选 `country`）；DS13/DS14 用于国家筛选。
-2. **图表**：先做 CH13（Native Filter）→ CH12（明细表，验证 DS15 与参数）→ CH04（影像覆盖）→ CH05（DEM 覆盖）。
-3. **看板**：新建「覆盖下钻与明细」，拖入 CH04、CH05、CH12，按 B.2.3/B.2.4 排布；再在 Filters 中配置 B.2.5 的筛选器并勾选联动图表。
-4. **验证**：切换国家与日期范围，确认 CH12 明细与 CH04/CH05（若已接参数）随之刷新。
-
----
-
-### B.3 DB03 道路与 POI 分析——详细实施规划
-
-> **参考**：本规划延续 4.6.4.1 / 4.6.4.2 的 DB03 定义，采用 **12 列网格**；图表为 CH06、CH07、CH08、CH09、CH10、CH13；数据集见 4.6.2（DS06、DS07、DS08、DS10、DS13/DS14）。
-
----
-
-#### B.3.1 看板定位与目标
-
-| 项目 | 说明 |
-|------|------|
-| 看板名称 | 道路与 POI 分析 |
-| 看板 ID（规划） | DB03 |
-| 数据源 | crawler_db（PostgreSQL） |
-| 核心问题 | ① 各国道路长度及子类型分布？② 道路长度随时间（mo）趋势？③ 各国 POI 数量与分类占比？④ Overture 与 OSM 道路数据对比？ |
-| 图表组成 | CH06（道路长度-按国家/类型）、CH07（道路长度-趋势）、CH08（POI 数量-按国家/分类）、CH09（POI 分类占比）、CH10（Overture vs OSM 对比）、CH13（筛选器） |
-
----
-
-#### B.3.2 涉及表与字段速查
-
-| 表名 | 关键字段 | 用途 |
-|------|----------|------|
-| `app_osm_road_length`（DS06） | mo, country_code, road_subtype, road_length_km | CH06 柱状（按国家/子类型） |
-| `app_osm_road_length_all`（DS07） | mo, country_code, open_road, close_road, total_road | CH07 趋势（按 mo） |
-| `app_foursquare_places_d`（DS08） | country_alpha3, date_refreshed, level1_category_name, poi_count, is_closed | CH08 柱状、CH09 饼图 |
-| `road_overture_osm_compare_m`（DS10） | country, overture_total, osm_total, matched_count, match_rate | CH10 对比柱状 |
-| `dim_country` / `dim_osm_country_relation`（DS13/DS14） | alpha2/alpha3、area_name 等 | CH13 国家筛选 |
-
-> **主键/唯一**：app_osm_road_length(mo, country_code, road_subtype)；app_osm_road_length_all(mo, country_code)。筛选时尽量带 mo / date_refreshed / country 以利用索引。
-
----
-
-#### B.3.3 数据集规划
-
-（数据集见 4.6.2：DS06、DS07、DS08、DS10、DS13/DS14；具体建表/SQL 与 B.1.3 风格一致，此处从略。）
-
----
-
-#### B.3.4 图表规划
+#### B.2.2 图表规划
 
 | 图表 ID | 图表名称 | 图表类型 | 数据集 | 配置要点 |
 |---------|----------|----------|--------|----------|
-| CH-DB03-06 | 道路长度-按国家/类型 | Bar（柱状） | DS06 | X：country_code；Y：SUM(road_length_km)；Group/堆叠：road_subtype；Filter：mo；Row limit 建议 50 |
-| CH-DB03-07 | 道路长度-趋势 | Line（折线） | DS07 | X：mo（时间）；Y：SUM(total_road)；Series：country_code；Filter：country_code |
-| CH-DB03-08 | POI 数量-按国家/分类 | Bar（柱状） | DS08 | X：country_alpha3 或 level1_category_name；Y：SUM(poi_count)；Filter：date_refreshed, is_closed |
-| CH-DB03-09 | POI 分类占比 | Pie（饼图） | DS08 | 分组：level1_category_name；指标：SUM(poi_count)；Filter：country_alpha3, date_refreshed |
-| CH-DB03-10 | Overture vs OSM 道路对比 | Bar（柱状） | DS10 | X：country；Y：overture_total, osm_total, matched_count（多指标）；或双轴展示 match_rate |
-| CH-DB03-F | 筛选器组 | Native Filter | DS06/DS07/DS08/DS10 + DS13 | 国家（country_code/alpha3）、月份 mo、日期 date_refreshed；勾选 Cross-filter 联动上述图表 |
+| CH-ROAD-01 | 全球道路采集覆盖热力图 | deck_polygon | DS-ROAD-01 | 几何列：geom；颜色/权重：total_road_length；Emit 列：country |
+| CH-ROAD-02 | 道路总里程 KPI | big_number_total | DS06 | 指标：SUM(road_length_km) |
+| CH-ROAD-03 | 覆盖国家数 KPI | big_number_total | DS06 | 指标：COUNT_DISTINCT(country_code) |
+| CH-ROAD-04 | 道路长度国家排行榜 | table | DS06 | 列：country_code, SUM(road_length_km)；按里程降序；Row limit 10 |
+| CH-ROAD-05 | 道路长度增长趋势 | echarts_area | DS07 | X：mo；Y：SUM(total_road)；Series：country_code |
 
-> **CH10 多指标**：若 Superset 柱状图支持多指标，可同轴展示 overture_total、osm_total、matched_count；match_rate 可放次 Y 轴或单独图表。
+#### B.2.3 看板布局 (Dashboard ID: 19)
 
----
+采用与 DB01 一致的 **120 高度对齐布局**：
 
-#### B.3.5 看板布局
+1. **第一层：核心监控区 (Row ID: ROW_MAP_KPI)**
+   - **左侧复合列 (w=3)**：
+     - **道路总里程** (CH-ROAD-02, h=20)
+     - **覆盖国家数** (CH-ROAD-03, h=20)
+     - **道路长度国家排行榜** (CH-ROAD-04, Table, h=80)
+   - **右侧大地图 (w=9)**：**全球道路采集覆盖热力图** (CH-ROAD-01, deck_polygon, h=120)
+   - **对齐逻辑**：左侧合计高度 120 与地图高度 120 底部对齐。
 
-与 4.6.4.2 一致：
-
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│ ROW 1：筛选器（1 行高）                                                     │
-│ [CH13] 国家（多选） | 月份 mo | 日期 date_refreshed | 应用/清除             │
-├────────────────────────────────────────────────────────────────────────────┤
-│ ROW 2：道路（建议 8～10 行高）                                              │
-│ [CH06 道路长度-按国家/类型] 6 列     │ [CH07 道路长度-趋势] 6 列             │
-├─────────────────────────────────────┴──────────────────────────────────────┤
-│ ROW 3：POI（建议 8～10 行高）                                               │
-│ [CH08 POI 数量-按国家/分类] 6 列     │ [CH09 POI 分类占比] 6 列               │
-├─────────────────────────────────────┴──────────────────────────────────────┤
-│ ROW 4：对比（建议 6～8 行高）                                               │
-│ [CH10 Overture vs OSM 道路对比] 12 列                                       │
-└────────────────────────────────────────────────────────────────────────────┘
-```
+2. **第二层：趋势分析区 (Row ID: ROW_TREND)**
+   - **道路长度增长趋势** (CH-ROAD-05, w=12, h=50)
 
 ---
 
-#### B.3.6 position_json 参考（12 列）
+### B.3 DB03 POI 采集覆盖总览
 
-| 节点类型 | 节点 ID | 宽度 | 高度 | 说明 |
-|----------|----------|------|------|------|
-| GRID | GRID_ID | — | — | children: ROW_2, ROW_3, ROW_4 |
-| ROW | ROW_2 | — | — | children: CHART_CH06, CHART_CH07 |
-| CHART | CHART_CH06 | 6 | 36 | 道路长度-按国家/类型 |
-| CHART | CHART_CH07 | 6 | 36 | 道路长度-趋势 |
-| ROW | ROW_3 | — | — | children: CHART_CH08, CHART_CH09 |
-| CHART | CHART_CH08 | 6 | 36 | POI 数量-按国家/分类 |
-| CHART | CHART_CH09 | 6 | 36 | POI 分类占比 |
-| ROW | ROW_4 | — | — | children: CHART_CH10 |
-| CHART | CHART_CH10 | 12 | 32 | Overture vs OSM 道路对比 |
-
-- 筛选器由看板「Filters」配置，不占 position_json 中的 CHART 节点；高度可按观感微调。
-
----
-
-#### B.3.7 Native Filter 联动配置
-
-| 筛选器名称 | 绑定列/数据集 | 联动图表 | 说明 |
-|------------|---------------|----------|------|
-| 国家 | country_code（DS06/DS07）或 country_alpha3（DS08）或 country（DS10） | CH06、CH07、CH08、CH09、CH10 | 需与各表维度一致：道路表多为 country_code，POI 为 country_alpha3，对比表为 country（3 字母） |
-| 月份 mo | mo（DS06、DS07） | CH06、CH07 | 格式 yyyyMM |
-| 日期 date_refreshed | date_refreshed（DS08） | CH08、CH09 | POI 表按日分区 |
-
-- 若国家维度在各表中命名不统一，筛选器可绑定维表（DS13/DS14）后通过 Cross-filter 传到各图表，或各图表分别绑定对应数据集的国家列。
-
----
-
-#### B.3.8 创建步骤（参考顺序）
-
-1. **数据集**：创建 DS06（app_osm_road_length）、DS07（app_osm_road_length_all）、DS08（app_foursquare_places_d）、DS10（road_overture_osm_compare_m）；DS13/DS14 可选（国家筛选）。
-2. **图表**：按 CH06 → CH07 → CH08 → CH09 → CH10 顺序创建并绑定对应数据集；再配置 CH13（Native Filter）。
-3. **看板**：新建「道路与 POI 分析」，拖入 CH06～CH10，按 B.3.4/B.3.5 排布；在 Filters 中配置国家、mo、date_refreshed 并勾选联动图表。
-4. **验证**：切换国家、月份、日期，确认各图表数据与筛选一致；检查 CH10 多指标/双轴展示是否符合预期。
-
----
-
-### B.4 DB04 人口与综合指标——详细实施规划
-
-> **参考**：本规划延续 4.6.4.1 / 4.6.4.2 的 DB04 定义，采用 **12 列网格**；图表为 CH11、CH13，可选 CH02（与 DB01 复用或复制）；数据集见 4.6.2（DS11、DS12、DS13/DS14）。
-
----
-
-#### B.4.1 看板定位与目标
+#### B.3.1 数据集设计 (DS-POI-01)
 
 | 项目 | 说明 |
 |------|------|
-| 看板名称 | 人口与综合指标 |
-| 看板 ID（规划） | DB04 |
-| 数据源 | crawler_db（PostgreSQL） |
-| 核心问题 | ① 各国/省份人口分布如何？② 可选：与采集覆盖量（CH02）对比查看 |
-| 图表组成 | CH11（人口分布-按国家）、CH13（筛选器）；可选 CH02（覆盖量-按国家柱状） |
+| **类型** | Virtual Dataset（SQL） |
+| **数据集名称** | `ds_poi_coverage_world_map` |
+| **定位** | 同时提供**国家边界几何（geom）与 POI 数量指标**，用于渲染全球 POI 采集覆盖热力图 |
+| **依赖表** | `app_foursquare_places_d`（POI 统计）、`gadm_country_boundary`（国家边界几何） |
 
----
+**输出列**
 
-#### B.4.2 涉及表与字段速查
+| 列名 | 类型 | 来源 | 说明 |
+|------|------|------|------|
+| country_code3 | varchar(3) | gadm_country_boundary.country_code3 | 国家 3 字母 ISO 代码 |
+| country | varchar(3) | `g.country_code3 AS country` | 供地图 Emit Cross-filter 使用 |
+| country_name | varchar | gadm_country_boundary.country_name | 国家名称，用于 Tooltip |
+| geom | geometry(MultiPolygon) | gadm_country_boundary.geom | 国家边界多边形 |
+| total_poi_count | bigint | `SUM(poi_count)` | POI 总数量 |
 
-| 表名 | 关键字段 | 用途 |
-|------|----------|------|
-| `dw_osm_population_info`（DS11） | country, countryname, provincename, townname, population(varchar), sourcepop | CH11 人口柱状；population 为 varchar，聚合时需转数值或用表达式 |
-| `overture_area_population`（DS12） | country, subtype, subtype_cn, area, population(integer) | 可选：Overture 区域人口柱状/对比 |
-| `dim_country` / `dim_osm_country_relation`（DS13/DS14） | alpha2/alpha3、area_name 等 | CH13 国家筛选 |
-| `crawler_tile_all`（DB01 已用，DS03） | country, type, dt, count_nums | 可选 CH02 覆盖量柱状 |
+**SQL**
 
-> **说明**：`dw_osm_population_info.population` 为 varchar(100)（详见《20260203_BI展示技术方案_crawler_db数据源调研.md》），若需按国家 SUM(population)，需在 Superset 中建**计算指标**（如 `SUM(CAST(population AS NUMERIC))` 或 `SUM(NULLIF(REGEXP_REPLACE(population,'[^0-9.]','','g'),'')::NUMERIC)`），或建虚拟数据集先转换再聚合。
+```sql
+SELECT
+    g.country_code3,
+    g.country_code3 AS country,
+    g.country_name,
+    g.geom,
+    COALESCE(p.total_poi_count, 0) AS total_poi_count
+FROM gadm_country_boundary g
+LEFT JOIN (
+    SELECT
+        country_alpha3,
+        SUM(poi_count) AS total_poi_count
+    FROM app_foursquare_places_d
+    GROUP BY country_alpha3
+) p ON g.country_code3 = p.country_alpha3
+WHERE g.level = 0
+```
 
----
+> **关联说明**：`app_foursquare_places_d.country_alpha3` 为 3 字母 ISO 代码，直接与 `gadm_country_boundary.country_code3` 关联即可。
 
-#### B.4.3 数据集规划
+**Superset 数据集配置**
 
-（数据集见 4.6.2：DS11、DS12、DS13/DS14；具体建表/SQL 与 B.1.3 风格一致，此处从略。）
+| 配置项 | 操作 |
+|--------|------|
+| `geom` 列 | 将 Type 改为 **Spatial（Geometry）** |
+| 默认指标 | 将 `total_poi_count` 设为默认聚合（SUM） |
+| `country` 列 | 标记为 **Dimension**，用于 Cross-filter |
 
----
-
-#### B.4.4 图表规划
+#### B.3.2 图表规划
 
 | 图表 ID | 图表名称 | 图表类型 | 数据集 | 配置要点 |
 |---------|----------|----------|--------|----------|
-| CH-DB04-11 | 人口分布-按国家 | Bar（柱状） | DS11 | X：country 或 countryname；Y：SUM(population)（需做数值转换）；Filter：provincename；Row limit 建议 50 |
-| CH-DB04-02（可选） | 覆盖量-按国家柱状 | Bar | DS03（crawler_tile_all） | 与 DB01 的 CH02 配置一致，便于与人口图对比；X：country；Y：SUM(count_nums)；Group：type |
-| CH-DB04-F | 筛选器组 | Native Filter | DS11/DS12 + DS13 | 国家（country / countryname）；可选省份 provincename；勾选 Cross-filter 联动 CH11（及可选 CH02） |
+| CH-POI-01 | 全球 POI 采集覆盖热力图 | deck_polygon | DS-POI-01 | 几何列：geom；颜色/权重：total_poi_count；Emit 列：country |
+| CH-POI-02 | POI 采集总数 KPI | big_number_total | DS08 | 指标：SUM(poi_count) |
+| CH-POI-03 | 覆盖国家数 KPI | big_number_total | DS08 | 指标：COUNT_DISTINCT(country_alpha3) |
+| CH-POI-04 | POI 采集类型分布 | pie | DS08 | 维度：level1_category_name；指标：SUM(poi_count)；标签类型：百分比 |
+| CH-POI-05 | POI 采集增长趋势 | echarts_area | DS08 | X：date_refreshed；Y：SUM(poi_count)；Series：country_alpha3 |
 
-> **CH11 指标**：若 DS11 直连物理表，在数据集「Metrics」中新增指标，表达式建议为 `SUM(CAST(NULLIF(TRIM(REGEXP_REPLACE(population, '[^0-9.]', '', 'g')), '') AS NUMERIC))`，先清洗逗号/空格等非数字字符再聚合，避免 `invalid input syntax for type numeric` 报错。
+#### B.3.3 看板布局 (Dashboard ID: 20)
+
+采用与 DB01 一致的 **120 高度对齐布局**：
+
+1. **第一层：核心监控区 (Row ID: ROW_MAP_KPI)**
+   - **左侧复合列 (w=3)**：
+     - **POI 采集总数** (CH-POI-02, h=20)
+     - **覆盖国家数** (CH-POI-03, h=20)
+     - **POI 采集类型分布** (CH-POI-04, Pie, h=80)
+   - **右侧大地图 (w=9)**：**全球 POI 采集覆盖热力图** (CH-POI-01, deck_polygon, h=120)
+   - **对齐逻辑**：左侧合计高度 120 与地图高度 120 底部对齐。
+
+2. **第二层：趋势分析区 (Row ID: ROW_TREND)**
+   - **POI 采集增长趋势** (CH-POI-05, w=12, h=50)
 
 ---
 
-#### B.4.5 看板布局
+### B.4 DB04 人口与综合指标
 
-与 4.6.4.2 一致：
+#### B.4.1 数据集设计 (DS-POP-01)
 
+| 项目 | 说明 |
+|------|------|
+| **类型** | Virtual Dataset（SQL） |
+| **数据集名称** | `ds_population_coverage_world_map` |
+| **定位** | 同时提供**国家边界几何（geom）与人口指标**，用于渲染全球人口分布热力图 |
+| **依赖表** | `dw_osm_population_info`（人口统计）、`gadm_country_boundary`（国家边界几何） |
+
+**SQL**
+
+```sql
+SELECT
+    g.country_code3,
+    g.country_code3 AS country,
+    g.country_name,
+    ST_AsGeoJSON(ST_Simplify(g.geom, 0.1)) AS geom,
+    COALESCE(p.total_population, 0) AS total_population
+FROM gadm_country_boundary g
+LEFT JOIN (
+    SELECT
+        country,
+        SUM(CAST(NULLIF(TRIM(REGEXP_REPLACE(population, '[^0-9.]', '', 'g')), '') AS NUMERIC)) AS total_population
+    FROM dw_osm_population_info
+    GROUP BY country
+) p ON g.country_code3 = p.country
+WHERE g.level = 0
 ```
-┌────────────────────────────────────────────────────────────────────────────┐
-│ ROW 1：筛选器（1 行高）                                                     │
-│ [CH13] 国家（多选） | 可选：省份 provincename | 应用/清除                   │
-├────────────────────────────────────────────────────────────────────────────┤
-│ ROW 2：人口主图（建议 10～12 行高）                                         │
-│ [CH11 人口分布-按国家] 12 列                                                │
-├────────────────────────────────────────────────────────────────────────────┤
-│ ROW 3（可选）：对比                                                        │
-│ [CH02 覆盖量-按国家柱状] 12 列                                              │
-└────────────────────────────────────────────────────────────────────────────┘
-```
 
-- 仅 CH11 时仅保留 ROW 1 + ROW 2；需要与覆盖量对比时增加 ROW 3 放置 CH02。
+#### B.4.2 图表规划
 
----
+| 图表 ID | 图表名称 | 图表类型 | 数据集 | 配置要点 |
+|---------|----------|----------|--------|----------|
+| CH-POP-01 | 全球人口分布热力图 | deck_polygon | DS-POP-01 | 几何列：geom；颜色/权重：total_population |
+| CH-POP-02 | 总人口数 KPI | big_number_total | DS11 | 指标：SUM(population) |
+| CH-POP-03 | 覆盖行政区划数 KPI | big_number_total | DS11 | 指标：COUNT(DISTINCT townname) |
+| CH-POP-04 | 人口分布排行榜 | table | DS11 | 列：countryname, total_population；按人口降序；Row limit 10 |
 
-#### B.4.6 position_json 参考（12 列）
+#### B.4.3 看板布局 (Dashboard ID: 22)
 
-| 节点类型 | 节点 ID | 宽度 | 高度 | 说明 |
-|----------|----------|------|------|------|
-| GRID | GRID_ID | — | — | children: ROW_2 [, ROW_3] |
-| ROW | ROW_2 | — | — | children: CHART_CH11 |
-| CHART | CHART_CH11 | 12 | 40 | 人口分布-按国家 |
-| ROW | ROW_3（可选） | — | — | children: CHART_CH02 |
-| CHART | CHART_CH02（可选） | 12 | 32 | 覆盖量-按国家柱状 |
+采用与 DB01 一致的 **120 高度对齐布局**：
 
----
+1. **第一层：核心监控区 (Row ID: ROW_MAP_KPI)**
+   - **左侧复合列 (w=3)**：
+     - **总人口数** (CH-POP-02, h=20)
+     - **覆盖行政区划数** (CH-POP-03, h=20)
+     - **人口分布排行榜** (CH-POP-04, Table, h=80)
+   - **右侧大地图 (w=9)**：**全球人口分布热力图** (CH-POP-01, deck_polygon, h=120)
+   - **对齐逻辑**：左侧合计高度 120 与地图高度 120 底部对齐。
 
-#### B.4.7 Native Filter 联动配置
-
-| 筛选器名称 | 绑定列/数据集 | 联动图表 | 说明 |
-|------------|---------------|----------|------|
-| 国家 | country 或 countryname（DS11） | CH11、（可选 CH02 若绑定 DS03） | 与 DS11 维度一致；若加 CH02，需同时绑定 DS03.country |
-| 省份（可选） | provincename（DS11） | CH11 | 下钻到省份粒度 |
+2. **第二层：扩展分析区 (Row ID: ROW_EXPAND)**
+   - 预留位置用于 Overture 区域人口对比等扩展图表 (w=12, h=50)
 
 ---
 
-#### B.4.8 创建步骤（参考顺序）
+#### B.4.4 实施步骤
 
-1. **数据集**：创建 DS11（dw_osm_population_info）；可选 DS12（overture_area_population）；DS13/DS14 可选（国家筛选）。在 DS11 中为 population 建可聚合指标（如 CAST 后 SUM）。
-2. **图表**：创建 CH11（人口分布-按国家）；可选：复制或复用 DB01 的 CH02 作为「覆盖量-按国家」加入本看板。
-3. **看板**：新建「人口与综合指标」，拖入 CH11（及可选 CH02），按 B.4.4/B.4.5 排布；在 Filters 中配置国家（及可选省份）并勾选联动图表。
-4. **验证**：切换国家/省份，确认 CH11 数据与筛选一致；若含 CH02，确认两国度对比展示符合预期。
+1. **数据集**：创建 DS-POP-01（虚拟数据集，关联 GADM 与人口表）；在 DS11 中为 population 建可聚合指标（如 CAST 后 SUM）。
+2. **图表**：创建 CH-POP-01（热力图）、CH-POP-02/03（KPI）、CH-POP-04（排行简表）。
+3. **看板**：新建「人口与综合指标」，按照 B.4.3 的三栏复合布局排布组件。
+4. **验证**：确认人口热力图着色正确，KPI 数值与排行表一致。
 
 ---

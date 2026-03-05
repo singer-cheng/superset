@@ -378,7 +378,7 @@
   },
   "peerDependencies": {
     "ace-builds": "^1.41.0",
-    "core-js": "^3.38.1",
+    "core-js": "^3.48.0",
     "handlebars": "^4.7.8",
     "react-ace": "^10.1.0",
     "regenerator-runtime": "^0.14.1"
@@ -388,10 +388,11 @@
     "npm": "^10.8.1"
   },
   "overrides": {
-    "core-js": "^3.38.1",
+    "@noble/hashes": "^2.0.1",
+    "core-js": "^3.48.0",
     "puppeteer": "^22.4.1",
     "remark-gfm": "^3.0.1",
-    "underscore": "^1.13.7",
+    "underscore": "^1.13.8",
     "jspdf": "^4.2.0",
     "nwsapi": "^2.2.13",
     "@deck.gl/aggregation-layers": "~9.2.5",
