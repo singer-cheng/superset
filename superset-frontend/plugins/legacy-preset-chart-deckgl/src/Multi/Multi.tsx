@@ -61,6 +61,7 @@ import { getPoints as getPointsContour } from '../layers/Contour/Contour';
 import { getPoints as getPointsHeatmap } from '../layers/Heatmap/Heatmap';
 import { getPoints as getPointsHex } from '../layers/Hex/Hex';
 import { getPoints as getPointsGeojson } from '../layers/Geojson/Geojson';
+import { getPoints as getPointsH3 } from '../layers/H3/H3';
 import { getPoints as getPointsScreengrid } from '../layers/Screengrid/Screengrid';
 
 type DataMaskState = Record<
@@ -128,6 +129,7 @@ const DeckMulti = (props: DeckMultiProps) => {
         ...getPointsHex(props.payload.data.features.deck_hex || []),
         ...getPointsArc(props.payload.data.features.deck_arc || []),
         ...getPointsGeojson(props.payload.data.features.deck_geojson || []),
+        ...getPointsH3(props.payload.data.features.deck_h3 || []),
         ...getPointsScreengrid(
           props.payload.data.features.deck_screengrid || [],
         ),

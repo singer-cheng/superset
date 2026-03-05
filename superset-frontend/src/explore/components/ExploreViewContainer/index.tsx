@@ -266,6 +266,7 @@ const AGGREGATED_CHART_TYPES = [
   'deck_heatmap',
   'deck_contour',
   'deck_hex',
+  'deck_h3',
   'deck_grid',
   // Other aggregated chart types can be added here
   'heatmap',

@@ -44,6 +44,7 @@ const AGGREGATED_DECK_GL_CHART_TYPES = [
   'deck_heatmap',
   'deck_contour',
   'deck_hex',
+  'deck_h3',
   'deck_grid',
 ];
 

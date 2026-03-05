@@ -80,6 +80,7 @@ export const CHARTS_WITHOUT_GROUPBY = [
   'deck_arc',
   'deck_geojson',
   'deck_grid',
+  'deck_h3',
   'deck_hex',
   'deck_heatmap',
   'deck_multi',

@@ -137,3 +137,7 @@ PROJECT.md
 oxc-custom-build/
 *.code-workspace
 *.duckdb
+
+build.sh
+build-dev.sh
+pnpm-lock.yaml
