@@ -1,4 +1,4 @@
-# crawler_db 全表扫描与 Superset 报表适配清单
+# BI 展示技术方案 - 数据源调研
 
 - 扫描时间：2026-02-26 20:56:38
 - 数据源：`crawler_db.public`
@@ -7,41 +7,41 @@
 
 ## 总览
 
-| 表名 | 行数 | Superset报表可用性 | 表用途/使用场景 |
-|---|---:|---|---|
-| `app_foursquare_places_d` | 4618805 | 可用 | POI 数量与分类分析 |
-| `app_osm_address_info` | 206 | 可用 | OSM/Overture 主题分析扩展 |
-| `app_osm_barrier_info` | 505 | 可用 | OSM/Overture 主题分析扩展 |
-| `app_osm_building_info` | 28552 | 可用 | OSM/Overture 主题分析扩展 |
-| `app_osm_land_info` | 12886 | 可用 | OSM/Overture 主题分析扩展 |
-| `app_osm_restriction_info` | 1234 | 可用 | OSM/Overture 主题分析扩展 |
-| `app_osm_road_length` | 2957 | 可用 | 道路专题分析（长度、趋势、对比） |
-| `app_osm_road_length_all` | 213 | 可用 | 道路专题分析（长度、趋势、对比） |
-| `app_osm_turn_info` | 23124 | 可用 | OSM/Overture 主题分析扩展 |
-| `app_osm_waterway_info` | 4408 | 可用 | OSM/Overture 主题分析扩展 |
-| `app_overture_road_length` | 3117 | 可用 | OSM/Overture 主题分析扩展 |
-| `crawler_tile_all` | 149 | 可用 | 采集覆盖总览（国家/类型/日期趋势） |
-| `dem_tiles_data` | 33681 | 可用（地图） | 空间覆盖与轨迹/街景专题 |
-| `dim_country` | 249 | 可用（维表） | 筛选器字典、维度映射、下钻 |
-| `dim_country_name` | 250 | 可用（维表） | 筛选器字典、维度映射、下钻 |
-| `dim_osm_country_relation` | 29111 | 可用（维表） | 筛选器字典、维度映射、下钻 |
-| `dim_osm_poi_info` | 72 | 可用（维表） | 筛选器字典、维度映射、下钻 |
-| `dim_province` | 5871 | 可用（维表） | 筛选器字典、维度映射、下钻 |
-| `dw_osm_population_info` | 15101 | 可用 | 人口与综合指标分析 |
-| `dws_osm_road_network_density` | 0 | 暂不建议 | 基础数据或专题扩展 |
-| `gadm_country_boundary` | 348745 | 可用（地图） | 基础数据或专题扩展 |
-| `geoboundaries_org_country_boundary` | 715 | 可用 | 基础数据或专题扩展 |
-| `gps_trace_data` | 8303171 | 可用（地图） | 空间覆盖与轨迹/街景专题 |
-| `o_node` | 0 | 暂不建议 | 基础数据或专题扩展 |
-| `o_relation` | 0 | 暂不建议 | 基础数据或专题扩展 |
-| `o_road` | 0 | 暂不建议 | 基础数据或专题扩展 |
-| `openaddress_job_info` | 748573 | 条件可用 | 基础数据或专题扩展 |
-| `overture_area_population` | 670620 | 可用 | 人口与综合指标分析 |
-| `rels_all` | 286481 | 条件可用 | 基础数据或专题扩展 |
-| `road_overture_osm_compare_m` | 198 | 可用 | 道路专题分析（长度、趋势、对比） |
-| `satellite_images` | 0 | 暂不建议 | 空间覆盖与轨迹/街景专题 |
-| `spatial_ref_sys` | 8500 | 条件可用 | 基础数据或专题扩展 |
-| `street_views` | 187626 | 可用（地图） | 空间覆盖与轨迹/街景专题 |
+| 表名                                   |      行数 | DLC 任务 ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Spark 任务主类                                               | Superset 报表可用性 | 表用途/使用场景            |
+|--------------------------------------|--------:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|----------------|---------------------|
+| `app_foursquare_places_d`            | 4618805 | [batch_052ba845-a142-4c23-83dc-e2c968caad96](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_052ba845-a142-4c23-83dc-e2c968caad96&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | com.maptech.dwd.Dwd_overture_poi_m                       | 可用             | POI 数量与分类分析         |
+| `app_osm_address_info`               |     206 | [batch_c0601bb0-5e1d-490d-9290-2f176be33d66](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_c0601bb0-5e1d-490d-9290-2f176be33d66&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_osm_address_m                        | 可用             | OSM/Overture 主题分析扩展 |
+| `app_osm_barrier_info`               |     505 | [batch_385f5e34-25ad-4a36-b113-858d7b0fb2da](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_385f5e34-25ad-4a36-b113-858d7b0fb2da&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_osm_barrier_m                        | 可用             | OSM/Overture 主题分析扩展 |
+| `app_osm_building_info`              |   28552 | [batch_9a390e71-aec5-4255-8ba6-1d1aa1050cac](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_9a390e71-aec5-4255-8ba6-1d1aa1050cac&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_osm_building_m                       | 可用             | OSM/Overture 主题分析扩展 |
+| `app_osm_land_info`                  |   12886 | [batch_3e12061d-7f13-4e73-8265-639d0c88832c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_3e12061d-7f13-4e73-8265-639d0c88832c&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_osm_land_m                           | 可用             | OSM/Overture 主题分析扩展 |
+| `app_osm_restriction_info`           |    1234 | [batch_4c99ee41-adf2-4bbb-a24a-d9013c6be994](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_4c99ee41-adf2-4bbb-a24a-d9013c6be994&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_osm_restriction_m                    | 可用             | OSM/Overture 主题分析扩展 |
+| `app_osm_road_length`                |    2957 | [batch_781bfdb3-cec1-4302-861f-7570bc2023b2](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_781bfdb3-cec1-4302-861f-7570bc2023b2&Type=edit),[batch_01fef90a-dbd4-4c36-9411-1a325f27a7c8](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_01fef90a-dbd4-4c36-9411-1a325f27a7c8&Type=edit)                                                                                                                                                                                                                                                                                                                  | com.maptech.dwd.Dwd_osm_road_m                           | 可用             | 道路专题分析（长度、趋势、对比）    |
+| `app_osm_road_length_all`            |     213 | [batch_781bfdb3-cec1-4302-861f-7570bc2023b2](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_781bfdb3-cec1-4302-861f-7570bc2023b2&Type=edit),[batch_01fef90a-dbd4-4c36-9411-1a325f27a7c8](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_01fef90a-dbd4-4c36-9411-1a325f27a7c8&Type=edit)                                                                                                                                                                                                                                                                                                                  | com.maptech.dwd.Dwd_osm_road_m                           | 可用             | 道路专题分析（长度、趋势、对比）    |
+| `app_osm_turn_info`                  |   23124 | [batch_d81598bd-cfbc-4d9b-9ac3-8cd75030d81e](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_d81598bd-cfbc-4d9b-9ac3-8cd75030d81e&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_osm_turn_m                           | 可用             | OSM/Overture 主题分析扩展 |
+| `app_osm_waterway_info`              |    4408 | [batch_a8012c20-4ac4-4036-b2c6-01e31c7161f9](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a8012c20-4ac4-4036-b2c6-01e31c7161f9&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_osm_water_m                          | 可用             | OSM/Overture 主题分析扩展 |
+| `app_overture_road_length`           |    3117 | [batch_07f26a84-84ab-44ab-bc23-28e5fefc1bbe](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_07f26a84-84ab-44ab-bc23-28e5fefc1bbe&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_overture_road_m                      | 可用             | OSM/Overture 主题分析扩展 |
+| `crawler_tile_all`                   |     149 | [batch_1f39abcc-9a94-45c7-9e77-961631633b6a](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_1f39abcc-9a94-45c7-9e77-961631633b6a&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.CountryTileExtractor                     | 可用             | 采集覆盖总览（国家/类型/日期趋势）  |
+| `dem_tiles_data`                     |   33681 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 可用（地图）         | 空间覆盖与轨迹/街景专题        |
+| `dim_country`                        |     249 | [batch_29595f45-36a2-43e5-8ebc-4e73aba2b311](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_29595f45-36a2-43e5-8ebc-4e73aba2b311&Type=edit),[batch_6b9782b2-fb33-473a-8ed2-28c2069eb570](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_6b9782b2-fb33-473a-8ed2-28c2069eb570&Type=edit),[batch_3dd99937-c886-4ca6-9c2c-1ba9b858730a](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_3dd99937-c886-4ca6-9c2c-1ba9b858730a&Type=edit),[batch_fe96d1c4-8844-490d-ae3d-af0308f29fe8](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_fe96d1c4-8844-490d-ae3d-af0308f29fe8&Type=edit) | com.maptech.dim.DimCountryRelationProcess                | 可用（维表）         | 筛选器字典、维度映射、下钻       |
+| `dim_country_name`                   |     250 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | com.maptech.dim.DimCountryRelationProcess                | 可用（维表）         | 筛选器字典、维度映射、下钻       |
+| `dim_osm_country_relation`           |   29111 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | com.maptech.dim.DimCountryRelationProcess                | 可用（维表）         | 筛选器字典、维度映射、下钻       |
+| `dim_osm_poi_info`                   |      72 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 可用（维表）         | 筛选器字典、维度映射、下钻       |
+| `dim_province`                       |    5871 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 可用（维表）         | 筛选器字典、维度映射、下钻       |
+| `dw_osm_population_info`             |   15101 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 可用             | 人口与综合指标分析           |
+| `dws_osm_road_network_density`       |       0 | [batch_51fe00b7-b49b-4c60-86c7-490ee653a83f](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_51fe00b7-b49b-4c60-86c7-490ee653a83f&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dws.Dws_osm_road_network_density             | 暂不建议           | 基础数据或专题扩展           |
+| `gadm_country_boundary`              |  348745 | [batch_23aa104f-572a-4ac6-a97c-add96d723df7](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_23aa104f-572a-4ac6-a97c-add96d723df7&Type=edit)，[batch_af06b952-f4c6-47d2-813b-87b47f2599fd](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_af06b952-f4c6-47d2-813b-87b47f2599fd&Type=edit)                                                                                                                                                                                                                                                                                                                  | com.maptech.dim.Dim_Osm_Boundary_Processing              | 可用（地图）         | 基础数据或专题扩展           |
+| `geoboundaries_org_country_boundary` |     715 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 可用             | 基础数据或专题扩展           |
+| `gps_trace_data`                     | 8303171 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 可用（地图）         | 空间覆盖与轨迹/街景专题        |
+| `o_node`                             |       0 | [batch_a396f671-7d45-4dca-88c1-11814fad34f4](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a396f671-7d45-4dca-88c1-11814fad34f4&Type=edit)，[batch_da8639d6-72e4-4183-b0f4-2805e6c8003c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_da8639d6-72e4-4183-b0f4-2805e6c8003c&Type=edit)                                                                                                                                                                                                                                                                                                                  | com.maptech.dwd.Dwd_osm_way_all_m                        | 暂不建议           | 基础数据或专题扩展           |
+| `o_relation`                         |       0 | [batch_a396f671-7d45-4dca-88c1-11814fad34f4](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a396f671-7d45-4dca-88c1-11814fad34f4&Type=edit)，[batch_da8639d6-72e4-4183-b0f4-2805e6c8003c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_da8639d6-72e4-4183-b0f4-2805e6c8003c&Type=edit)                                                                                                                                                                                                                                                                                                                  | com.maptech.dwd.Dwd_osm_way_all_m                        | 暂不建议           | 基础数据或专题扩展           |
+| `o_road`                             |       0 | [batch_a396f671-7d45-4dca-88c1-11814fad34f4](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a396f671-7d45-4dca-88c1-11814fad34f4&Type=edit)，[batch_da8639d6-72e4-4183-b0f4-2805e6c8003c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_da8639d6-72e4-4183-b0f4-2805e6c8003c&Type=edit)                                                                                                                                                                                                                                                                                                                  | com.maptech.dwd.Dwd_osm_way_all_m                        | 暂不建议           | 基础数据或专题扩展           |
+| `openaddress_job_info`               |  748573 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 条件可用           | 基础数据或专题扩展           |
+| `overture_area_population`           |  670620 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 可用             | 人口与综合指标分析           |
+| `rels_all`                           |  286481 | [batch_a396f671-7d45-4dca-88c1-11814fad34f4](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a396f671-7d45-4dca-88c1-11814fad34f4&Type=edit)，[batch_da8639d6-72e4-4183-b0f4-2805e6c8003c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_da8639d6-72e4-4183-b0f4-2805e6c8003c&Type=edit)                                                                                                                                                                                                                                                                                                                  | com.maptech.dwd.Dwd_osm_way_all_m                        | 条件可用           | 基础数据或专题扩展           |
+| `road_overture_osm_compare_m`        |     198 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 可用             | 道路专题分析（长度、趋势、对比）    |
+| `satellite_images`                   |       0 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                                                          | 暂不建议           | 空间覆盖与轨迹/街景专题        |
+| `spatial_ref_sys`                    |    8500 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | 系统表（无需ETL任务）                                             | 条件可用           | 基础数据或专题扩展           |
+| `street_views`                       |  187626 | [batch_2d6c6166-00c4-4f98-962a-620d33113e27](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_2d6c6166-00c4-4f98-962a-620d33113e27&Type=edit)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | com.maptech.dwd.Dwd_google_streetview_raw_data_process_d | 可用（地图）         | 空间覆盖与轨迹/街景专题        |
 
 ## 逐表明细
 
@@ -49,22 +49,24 @@
 
 - 行数：`4618805`
 - 表用途/使用场景：POI 数量与分类分析
+- DLC 任务 ID：[batch_052ba845-a142-4c23-83dc-e2c968caad96](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_052ba845-a142-4c23-83dc-e2c968caad96&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_overture_poi_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家+时间维度，适合趋势、排行、占比等常规报表。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `integer` | - |
-| `country` | `character(2)` | 国家Alpha-2代码 (如 "US") |
-| `country_alpha3` | `character(3)` | 国家Alpha-3代码 (如 "USA") |
-| `country_short_name` | `character varying(100)` | 国家简称 |
-| `date_refreshed` | `date` | POI最后更新时间 |
-| `is_closed` | `integer` | 是否关闭，1是0否 |
-| `level1_category_id` | `character varying(30)` | 一级分类ID |
-| `level1_category_name` | `character varying(50)` | 一级分类名称 |
-| `poi_count` | `integer` | poi数量 |
+| 字段名                    | 数据类型                     | 字段注释                  |
+|------------------------|--------------------------|-----------------------|
+| `id`                   | `integer`                | -                     |
+| `country`              | `character(2)`           | 国家Alpha-2代码 (如 "US")  |
+| `country_alpha3`       | `character(3)`           | 国家Alpha-3代码 (如 "USA") |
+| `country_short_name`   | `character varying(100)` | 国家简称                  |
+| `date_refreshed`       | `date`                   | POI最后更新时间             |
+| `is_closed`            | `integer`                | 是否关闭，1是0否             |
+| `level1_category_id`   | `character varying(30)`  | 一级分类ID                |
+| `level1_category_name` | `character varying(50)`  | 一级分类名称                |
+| `poi_count`            | `integer`                | poi数量                 |
 
 #### 数据样例（CSV，1 行）
 
@@ -77,15 +79,18 @@ id,country,country_alpha3,country_short_name,date_refreshed,is_closed,level1_cat
 
 - 行数：`206`
 - 表用途/使用场景：OSM/Overture 主题分析扩展
+- DLC 任务
+  ID：[batch_c0601bb0-5e1d-490d-9290-2f176be33d66](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_c0601bb0-5e1d-490d-9290-2f176be33d66&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_address_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(30)` | - |
-| `count_nums` | `integer` | - |
+| 字段名          | 数据类型                    | 字段注释 |
+|--------------|-------------------------|------|
+| `country`    | `character varying(30)` | -    |
+| `count_nums` | `integer`               | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -98,16 +103,19 @@ POL,8486608
 
 - 行数：`505`
 - 表用途/使用场景：OSM/Overture 主题分析扩展
+- DLC 任务
+  ID：[batch_385f5e34-25ad-4a36-b113-858d7b0fb2da](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_385f5e34-25ad-4a36-b113-858d7b0fb2da&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_barrier_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(30)` | - |
-| `barrier_class` | `character varying(200)` | - |
-| `count_nums` | `integer` | - |
+| 字段名             | 数据类型                     | 字段注释 |
+|-----------------|--------------------------|------|
+| `country`       | `character varying(30)`  | -    |
+| `barrier_class` | `character varying(200)` | -    |
+| `count_nums`    | `integer`                | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -120,16 +128,19 @@ GBR,gate,647930
 
 - 行数：`28552`
 - 表用途/使用场景：OSM/Overture 主题分析扩展
+- DLC 任务
+  ID：[batch_9a390e71-aec5-4255-8ba6-1d1aa1050cac](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_9a390e71-aec5-4255-8ba6-1d1aa1050cac&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_building_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(30)` | - |
-| `building_class` | `character varying(300)` | - |
-| `count_nums` | `integer` | - |
+| 字段名              | 数据类型                     | 字段注释 |
+|------------------|--------------------------|------|
+| `country`        | `character varying(30)`  | -    |
+| `building_class` | `character varying(300)` | -    |
+| `count_nums`     | `integer`                | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -142,17 +153,20 @@ AUT,platform,2
 
 - 行数：`12886`
 - 表用途/使用场景：OSM/Overture 主题分析扩展
+- DLC 任务
+  ID：[batch_3e12061d-7f13-4e73-8265-639d0c88832c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_3e12061d-7f13-4e73-8265-639d0c88832c&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_land_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(30)` | - |
-| `landuse_class` | `character varying(100)` | - |
-| `area` | `double precision` | - |
-| `count_nums` | `integer` | - |
+| 字段名             | 数据类型                     | 字段注释 |
+|-----------------|--------------------------|------|
+| `country`       | `character varying(30)`  | -    |
+| `landuse_class` | `character varying(100)` | -    |
+| `area`          | `double precision`       | -    |
+| `count_nums`    | `integer`                | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -165,17 +179,20 @@ JPN,gravel,1.7798151045886335,8
 
 - 行数：`1234`
 - 表用途/使用场景：OSM/Overture 主题分析扩展
+- DLC 任务
+  ID：[batch_4c99ee41-adf2-4bbb-a24a-d9013c6be994](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_4c99ee41-adf2-4bbb-a24a-d9013c6be994&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_restriction_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(3)` | - |
-| `restriction_type` | `character varying(30)` | - |
-| `restriction_value` | `character varying(60)` | - |
-| `count_nums` | `bigint` | - |
+| 字段名                 | 数据类型                    | 字段注释 |
+|---------------------|-------------------------|------|
+| `country`           | `character varying(3)`  | -    |
+| `restriction_type`  | `character varying(30)` | -    |
+| `restriction_value` | `character varying(60)` | -    |
+| `count_nums`        | `bigint`                | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -188,17 +205,20 @@ CHN,no_u_turn,禁止掉头,3059
 
 - 行数：`2957`
 - 表用途/使用场景：道路专题分析（长度、趋势、对比）
+- DLC 任务
+  ID：[batch_781bfdb3-cec1-4302-861f-7570bc2023b2](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_781bfdb3-cec1-4302-861f-7570bc2023b2&Type=edit),[batch_01fef90a-dbd4-4c36-9411-1a325f27a7c8](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_01fef90a-dbd4-4c36-9411-1a325f27a7c8&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_road_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家+时间维度，适合趋势、排行、占比等常规报表。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `mo` | `character varying(6)` | - |
-| `country_code` | `character varying(30)` | - |
-| `road_subtype` | `character varying(255)` | - |
-| `road_length_km` | `double precision` | - |
+| 字段名              | 数据类型                     | 字段注释 |
+|------------------|--------------------------|------|
+| `mo`             | `character varying(6)`   | -    |
+| `country_code`   | `character varying(30)`  | -    |
+| `road_subtype`   | `character varying(255)` | -    |
+| `road_length_km` | `double precision`       | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -211,18 +231,21 @@ mo,country_code,road_subtype,road_length_km
 
 - 行数：`213`
 - 表用途/使用场景：道路专题分析（长度、趋势、对比）
+- DLC 任务
+  ID：[batch_781bfdb3-cec1-4302-861f-7570bc2023b2](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_781bfdb3-cec1-4302-861f-7570bc2023b2&Type=edit),[batch_01fef90a-dbd4-4c36-9411-1a325f27a7c8](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_01fef90a-dbd4-4c36-9411-1a325f27a7c8&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_road_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家+时间维度，适合趋势、排行、占比等常规报表。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `mo` | `character varying(6)` | - |
-| `country_code` | `character varying(30)` | - |
-| `open_road` | `double precision` | - |
-| `close_road` | `double precision` | - |
-| `total_road` | `double precision` | - |
+| 字段名            | 数据类型                    | 字段注释 |
+|----------------|-------------------------|------|
+| `mo`           | `character varying(6)`  | -    |
+| `country_code` | `character varying(30)` | -    |
+| `open_road`    | `double precision`      | -    |
+| `close_road`   | `double precision`      | -    |
+| `total_road`   | `double precision`      | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -235,17 +258,20 @@ mo,country_code,open_road,close_road,total_road
 
 - 行数：`23124`
 - 表用途/使用场景：OSM/Overture 主题分析扩展
+- DLC 任务
+  ID：[batch_d81598bd-cfbc-4d9b-9ac3-8cd75030d81e](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_d81598bd-cfbc-4d9b-9ac3-8cd75030d81e&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_turn_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(30)` | - |
-| `turn_key` | `character varying(100)` | - |
-| `turn_value` | `character varying(300)` | - |
-| `count_nums` | `integer` | - |
+| 字段名          | 数据类型                     | 字段注释 |
+|--------------|--------------------------|------|
+| `country`    | `character varying(30)`  | -    |
+| `turn_key`   | `character varying(100)` | -    |
+| `turn_value` | `character varying(300)` | -    |
+| `count_nums` | `integer`                | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -258,16 +284,19 @@ HND,turn:lanes,right|right,1
 
 - 行数：`4408`
 - 表用途/使用场景：OSM/Overture 主题分析扩展
+- DLC 任务
+  ID：[batch_a8012c20-4ac4-4036-b2c6-01e31c7161f9](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a8012c20-4ac4-4036-b2c6-01e31c7161f9&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_water_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(30)` | - |
-| `waterway_class` | `character varying(100)` | - |
-| `count_nums` | `integer` | - |
+| 字段名              | 数据类型                     | 字段注释 |
+|------------------|--------------------------|------|
+| `country`        | `character varying(30)`  | -    |
+| `waterway_class` | `character varying(100)` | -    |
+| `count_nums`     | `integer`                | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -280,16 +309,19 @@ country,waterway_class,count_nums
 
 - 行数：`3117`
 - 表用途/使用场景：OSM/Overture 主题分析扩展
+- DLC 任务
+  ID：[batch_07f26a84-84ab-44ab-bc23-28e5fefc1bbe](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_07f26a84-84ab-44ab-bc23-28e5fefc1bbe&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_overture_road_m`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(3)` | - |
-| `road_class` | `character varying(100)` | - |
-| `road_length_km` | `double precision` | - |
+| 字段名              | 数据类型                     | 字段注释 |
+|------------------|--------------------------|------|
+| `country`        | `character varying(3)`   | -    |
+| `road_class`     | `character varying(100)` | -    |
+| `road_length_km` | `double precision`       | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -302,17 +334,19 @@ JPN,trunk,60931.495026087076
 
 - 行数：`149`
 - 表用途/使用场景：采集覆盖总览（国家/类型/日期趋势）
+- DLC 任务 ID：[batch_1f39abcc-9a94-45c7-9e77-961631633b6a](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_1f39abcc-9a94-45c7-9e77-961631633b6a&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.CountryTileExtractor`
 - Superset报表可用性：**可用**
 - 理由：具备国家+时间维度，适合趋势、排行、占比等常规报表。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(3)` | - |
-| `type` | `character varying(100)` | - |
-| `dt` | `character varying(100)` | - |
-| `count_nums` | `integer` | - |
+| 字段名          | 数据类型                     | 字段注释 |
+|--------------|--------------------------|------|
+| `country`    | `character varying(3)`   | -    |
+| `type`       | `character varying(100)` | -    |
+| `dt`         | `character varying(100)` | -    |
+| `count_nums` | `integer`                | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -325,23 +359,25 @@ KWT,google_map,20260101,2261283
 
 - 行数：`33681`
 - 表用途/使用场景：空间覆盖与轨迹/街景专题
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**可用（地图）**
 - 理由：含空间几何字段，可用于地图/空间分布图；需控制行数与地图渲染性能。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | 自增ID |
-| `tile_id` | `character varying(255)` | 遥感瓦片文件名 |
-| `level` | `character varying(50)` | 精度 |
-| `cos_file_url` | `character varying(500)` | 对象存储url |
-| `cos_file_size` | `numeric(14,3)` | 文件大小MB |
-| `geom` | `geometry` | 区域 |
-| `source_name` | `character varying(50)` | 来源 |
-| `create_time` | `timestamp with time zone` | 创建时间 |
-| `update_time` | `timestamp with time zone` | 更新时间 |
-| `source_url` | `character varying(1000)` | 来源url |
+| 字段名             | 数据类型                       | 字段注释    |
+|-----------------|----------------------------|---------|
+| `id`            | `bigint`                   | 自增ID    |
+| `tile_id`       | `character varying(255)`   | 遥感瓦片文件名 |
+| `level`         | `character varying(50)`    | 精度      |
+| `cos_file_url`  | `character varying(500)`   | 对象存储url |
+| `cos_file_size` | `numeric(14,3)`            | 文件大小MB  |
+| `geom`          | `geometry`                 | 区域      |
+| `source_name`   | `character varying(50)`    | 来源      |
+| `create_time`   | `timestamp with time zone` | 创建时间    |
+| `update_time`   | `timestamp with time zone` | 更新时间    |
+| `source_url`    | `character varying(1000)`  | 来源url   |
 
 #### 数据样例（CSV，1 行）
 
@@ -354,30 +390,33 @@ id,tile_id,level,cos_file_url,cos_file_size,geom,source_name,create_time,update_
 
 - 行数：`249`
 - 表用途/使用场景：筛选器字典、维度映射、下钻
+- DLC 任务
+  ID：[batch_29595f45-36a2-43e5-8ebc-4e73aba2b311](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_29595f45-36a2-43e5-8ebc-4e73aba2b311&Type=edit),[batch_6b9782b2-fb33-473a-8ed2-28c2069eb570](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_6b9782b2-fb33-473a-8ed2-28c2069eb570&Type=edit),[batch_3dd99937-c886-4ca6-9c2c-1ba9b858730a](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_3dd99937-c886-4ca6-9c2c-1ba9b858730a&Type=edit),[batch_fe96d1c4-8844-490d-ae3d-af0308f29fe8](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_fe96d1c4-8844-490d-ae3d-af0308f29fe8&Type=edit)
+- Spark 任务主类：`com.maptech.dim.DimCountryRelationProcess`
 - Superset报表可用性：**可用（维表）**
 - 理由：适合做筛选器、字典映射、下钻层级，不建议单独做主指标图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `integer` | - |
-| `alpha2_code` | `character varying(10)` | - |
-| `alpha3_code` | `character varying(10)` | - |
-| `numeric_code` | `character varying(10)` | - |
-| `short_name` | `character varying(500)` | - |
-| `full_name` | `character varying(1000)` | - |
-| `independent` | `character varying(255)` | - |
-| `territory_name` | `character varying(500)` | - |
-| `status` | `character varying(255)` | - |
-| `administrative_lang2` | `character varying(50)` | - |
-| `administrative_lang3` | `character varying(50)` | - |
-| `local_short_name` | `character varying(500)` | - |
-| `subdivisions` | `text` | - |
-| `source_url` | `character varying(255)` | - |
-| `validity` | `smallint` | - |
-| `create_time` | `timestamp with time zone` | - |
-| `update_time` | `timestamp with time zone` | - |
+| 字段名                    | 数据类型                       | 字段注释 |
+|------------------------|----------------------------|------|
+| `id`                   | `integer`                  | -    |
+| `alpha2_code`          | `character varying(10)`    | -    |
+| `alpha3_code`          | `character varying(10)`    | -    |
+| `numeric_code`         | `character varying(10)`    | -    |
+| `short_name`           | `character varying(500)`   | -    |
+| `full_name`            | `character varying(1000)`  | -    |
+| `independent`          | `character varying(255)`   | -    |
+| `territory_name`       | `character varying(500)`   | -    |
+| `status`               | `character varying(255)`   | -    |
+| `administrative_lang2` | `character varying(50)`    | -    |
+| `administrative_lang3` | `character varying(50)`    | -    |
+| `local_short_name`     | `character varying(500)`   | -    |
+| `subdivisions`         | `text`                     | -    |
+| `source_url`           | `character varying(255)`   | -    |
+| `validity`             | `smallint`                 | -    |
+| `create_time`          | `timestamp with time zone` | -    |
+| `update_time`          | `timestamp with time zone` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -390,15 +429,17 @@ id,alpha2_code,alpha3_code,numeric_code,short_name,full_name,independent,territo
 
 - 行数：`250`
 - 表用途/使用场景：筛选器字典、维度映射、下钻
+- DLC 任务 ID：
+- Spark 任务主类：`com.maptech.dim.DimCountryRelationProcess`
 - Superset报表可用性：**可用（维表）**
 - 理由：适合做筛选器、字典映射、下钻层级，不建议单独做主指标图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(64)` | - |
-| `name` | `character varying(200)` | - |
+| 字段名       | 数据类型                     | 字段注释 |
+|-----------|--------------------------|------|
+| `country` | `character varying(64)`  | -    |
+| `name`    | `character varying(200)` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -411,20 +452,22 @@ AIA,安圭拉
 
 - 行数：`29111`
 - 表用途/使用场景：筛选器字典、维度映射、下钻
+- DLC 任务 ID：
+- Spark 任务主类：`com.maptech.dim.DimCountryRelationProcess`
 - Superset报表可用性：**可用（维表）**
 - 理由：适合做筛选器、字典映射、下钻层级，不建议单独做主指标图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `integer` | 区域唯一ID |
-| `area_name_en` | `character varying(100)` | 区域英文名 |
-| `area_name_cn` | `character varying(100)` | 区域中文名 |
-| `parent_id` | `integer` | 父区域ID（根节点为NULL） |
-| `adm_level` | `character varying(5)` | 行政级别（ADM0/1/2） |
-| `country_code_alpha2` | `character(2)` | 2位国家编码 |
-| `country_code_alpha3` | `character(3)` | 3位国家编码 |
+| 字段名                   | 数据类型                     | 字段注释            |
+|-----------------------|--------------------------|-----------------|
+| `id`                  | `integer`                | 区域唯一ID          |
+| `area_name_en`        | `character varying(100)` | 区域英文名           |
+| `area_name_cn`        | `character varying(100)` | 区域中文名           |
+| `parent_id`           | `integer`                | 父区域ID（根节点为NULL） |
+| `adm_level`           | `character varying(5)`   | 行政级别（ADM0/1/2）  |
+| `country_code_alpha2` | `character(2)`           | 2位国家编码          |
+| `country_code_alpha3` | `character(3)`           | 3位国家编码          |
 
 #### 数据样例（CSV，1 行）
 
@@ -437,23 +480,25 @@ id,area_name_en,area_name_cn,parent_id,adm_level,country_code_alpha2,country_cod
 
 - 行数：`72`
 - 表用途/使用场景：筛选器字典、维度映射、下钻
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**可用（维表）**
 - 理由：适合做筛选器、字典映射、下钻层级，不建议单独做主指标图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `integer` | - |
-| `tag_key` | `character varying(100)` | - |
-| `tag_value` | `character varying(200)` | - |
-| `category_desc` | `text` | - |
-| `fclass` | `character varying(100)` | - |
-| `code` | `integer` | - |
-| `is_valid` | `boolean` | - |
-| `remark` | `text` | - |
-| `create_time` | `timestamp without time zone` | - |
-| `update_time` | `timestamp without time zone` | - |
+| 字段名             | 数据类型                          | 字段注释 |
+|-----------------|-------------------------------|------|
+| `id`            | `integer`                     | -    |
+| `tag_key`       | `character varying(100)`      | -    |
+| `tag_value`     | `character varying(200)`      | -    |
+| `category_desc` | `text`                        | -    |
+| `fclass`        | `character varying(100)`      | -    |
+| `code`          | `integer`                     | -    |
+| `is_valid`      | `boolean`                     | -    |
+| `remark`        | `text`                        | -    |
+| `create_time`   | `timestamp without time zone` | -    |
+| `update_time`   | `timestamp without time zone` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -466,22 +511,24 @@ id,tag_key,tag_value,category_desc,fclass,code,is_valid,remark,create_time,updat
 
 - 行数：`5871`
 - 表用途/使用场景：筛选器字典、维度映射、下钻
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**可用（维表）**
 - 理由：适合做筛选器、字典映射、下钻层级，不建议单独做主指标图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `integer` | - |
-| `alpha2_code` | `character varying(10)` | - |
-| `subdivision_cat` | `character varying(50)` | - |
-| `subdivision_name` | `character varying(255)` | - |
-| `code_3166_2` | `character varying(50)` | - |
-| `lang` | `character varying(50)` | - |
-| `validity` | `smallint` | - |
-| `create_time` | `timestamp with time zone` | - |
-| `update_time` | `timestamp with time zone` | - |
+| 字段名                | 数据类型                       | 字段注释 |
+|--------------------|----------------------------|------|
+| `id`               | `integer`                  | -    |
+| `alpha2_code`      | `character varying(10)`    | -    |
+| `subdivision_cat`  | `character varying(50)`    | -    |
+| `subdivision_name` | `character varying(255)`   | -    |
+| `code_3166_2`      | `character varying(50)`    | -    |
+| `lang`             | `character varying(50)`    | -    |
+| `validity`         | `smallint`                 | -    |
+| `create_time`      | `timestamp with time zone` | -    |
+| `update_time`      | `timestamp with time zone` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -494,20 +541,23 @@ id,alpha2_code,subdivision_cat,subdivision_name,code_3166_2,lang,validity,create
 
 - 行数：`15101`
 - 表用途/使用场景：人口与综合指标分析
+- DLC 任务
+  ID：
+- Spark 任务主类：
 - Superset报表可用性：**可用**
 - 理由：具备国家+时间维度，适合趋势、排行、占比等常规报表。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(3)` | - |
-| `countryname` | `character varying(100)` | - |
-| `provincename` | `character varying(100)` | - |
-| `townname` | `character varying(100)` | - |
-| `population` | `character varying(100)` | - |
-| `sourcepop` | `character varying(300)` | - |
-| `populationdate` | `character varying(100)` | - |
+| 字段名              | 数据类型                     | 字段注释 |
+|------------------|--------------------------|------|
+| `country`        | `character varying(3)`   | -    |
+| `countryname`    | `character varying(100)` | -    |
+| `provincename`   | `character varying(100)` | -    |
+| `townname`       | `character varying(100)` | -    |
+| `population`     | `character varying(100)` | -    |
+| `sourcepop`      | `character varying(300)` | -    |
+| `populationdate` | `character varying(100)` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -520,22 +570,25 @@ AFG,阿富汗,,,32738376,,
 
 - 行数：`0`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务
+  ID：[batch_51fe00b7-b49b-4c60-86c7-490ee653a83f](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_51fe00b7-b49b-4c60-86c7-490ee653a83f&Type=edit)
+- Spark 任务主类：`com.maptech.dws.Dws_osm_road_network_density`
 - Superset报表可用性：**暂不建议**
 - 理由：当前空表（0 行），做报表无数据展示价值，可保留结构待后续入库。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `road_subtype` | `character varying(64)` | - |
-| `road_class` | `character varying(64)` | - |
-| `road_length` | `numeric(16,6)` | - |
-| `coverage_area` | `numeric(16,6)` | - |
-| `network_density` | `numeric(16,6)` | - |
-| `province` | `character varying(164)` | - |
-| `grouping_flag` | `character varying(228)` | - |
-| `mo` | `character varying(6)` | - |
-| `country` | `character varying(3)` | - |
+| 字段名               | 数据类型                     | 字段注释 |
+|-------------------|--------------------------|------|
+| `road_subtype`    | `character varying(64)`  | -    |
+| `road_class`      | `character varying(64)`  | -    |
+| `road_length`     | `numeric(16,6)`          | -    |
+| `coverage_area`   | `numeric(16,6)`          | -    |
+| `network_density` | `numeric(16,6)`          | -    |
+| `province`        | `character varying(164)` | -    |
+| `grouping_flag`   | `character varying(228)` | -    |
+| `mo`              | `character varying(6)`   | -    |
+| `country`         | `character varying(3)`   | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -547,27 +600,30 @@ AFG,阿富汗,,,32738376,,
 
 - 行数：`348745`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务
+  ID：[batch_23aa104f-572a-4ac6-a97c-add96d723df7](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_23aa104f-572a-4ac6-a97c-add96d723df7&Type=edit)，[batch_af06b952-f4c6-47d2-813b-87b47f2599fd](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_af06b952-f4c6-47d2-813b-87b47f2599fd&Type=edit)
+- Spark 任务主类：`com.maptech.dim.Dim_Osm_Boundary_Processing`
 - Superset报表可用性：**可用（地图）**
 - 理由：含空间几何字段，可用于地图/空间分布图；需控制行数与地图渲染性能。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | 自增ID |
-| `country_name` | `character varying(128)` | 国家名 |
-| `country_code3` | `character varying(10)` | 3字母code |
-| `country_code2` | `character varying(10)` | 2字母code |
-| `geom` | `geometry` | MultiPolygon |
-| `level` | `integer` | 级别 |
-| `level_type` | `character varying(50)` | 类型 |
-| `level_name` | `character varying(255)` | 名称 |
-| `level_id` | `character varying(50)` | 当前id |
-| `parent_id` | `character varying(50)` | 上一层id |
-| `meta` | `jsonb` | 当条数据原始属性信息 |
-| `version` | `character varying(255)` | 数据源版本 |
-| `create_time` | `timestamp with time zone` | 创建时间 |
-| `update_time` | `timestamp with time zone` | 更新时间 |
+| 字段名             | 数据类型                       | 字段注释         |
+|-----------------|----------------------------|--------------|
+| `id`            | `bigint`                   | 自增ID         |
+| `country_name`  | `character varying(128)`   | 国家名          |
+| `country_code3` | `character varying(10)`    | 3字母code      |
+| `country_code2` | `character varying(10)`    | 2字母code      |
+| `geom`          | `geometry`                 | MultiPolygon |
+| `level`         | `integer`                  | 级别           |
+| `level_type`    | `character varying(50)`    | 类型           |
+| `level_name`    | `character varying(255)`   | 名称           |
+| `level_id`      | `character varying(50)`    | 当前id         |
+| `parent_id`     | `character varying(50)`    | 上一层id        |
+| `meta`          | `jsonb`                    | 当条数据原始属性信息   |
+| `version`       | `character varying(255)`   | 数据源版本        |
+| `create_time`   | `timestamp with time zone` | 创建时间         |
+| `update_time`   | `timestamp with time zone` | 更新时间         |
 
 #### 数据样例（CSV，1 行）
 
@@ -580,34 +636,36 @@ id,country_name,country_code3,country_code2,geom,level,level_type,level_name,lev
 
 - 行数：`715`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**可用**
 - 理由：具备国家+时间维度，适合趋势、排行、占比等常规报表。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `integer` | - |
-| `boundary_id` | `character varying(255)` | - |
-| `country_name` | `character varying(255)` | - |
-| `country_code` | `character varying(10)` | - |
-| `represented_year` | `character varying(100)` | - |
-| `level` | `character varying(10)` | - |
-| `canonical` | `character varying(1000)` | - |
-| `boundary_source` | `character varying(1000)` | - |
-| `license` | `character varying(1000)` | - |
-| `license_source` | `character varying(1000)` | - |
-| `boundary_source_url` | `character varying(1000)` | - |
-| `source_update_date` | `timestamp with time zone` | - |
-| `build_date` | `timestamp with time zone` | - |
-| `continent` | `character varying(255)` | - |
-| `unsdg_region` | `character varying(255)` | - |
-| `unsdg_subregion` | `character varying(255)` | - |
-| `adm_unit_count` | `integer` | - |
-| `geojson_url` | `character varying(255)` | - |
-| `cos_path` | `character varying(255)` | - |
-| `create_time` | `timestamp with time zone` | - |
-| `update_time` | `timestamp with time zone` | - |
+| 字段名                   | 数据类型                       | 字段注释 |
+|-----------------------|----------------------------|------|
+| `id`                  | `integer`                  | -    |
+| `boundary_id`         | `character varying(255)`   | -    |
+| `country_name`        | `character varying(255)`   | -    |
+| `country_code`        | `character varying(10)`    | -    |
+| `represented_year`    | `character varying(100)`   | -    |
+| `level`               | `character varying(10)`    | -    |
+| `canonical`           | `character varying(1000)`  | -    |
+| `boundary_source`     | `character varying(1000)`  | -    |
+| `license`             | `character varying(1000)`  | -    |
+| `license_source`      | `character varying(1000)`  | -    |
+| `boundary_source_url` | `character varying(1000)`  | -    |
+| `source_update_date`  | `timestamp with time zone` | -    |
+| `build_date`          | `timestamp with time zone` | -    |
+| `continent`           | `character varying(255)`   | -    |
+| `unsdg_region`        | `character varying(255)`   | -    |
+| `unsdg_subregion`     | `character varying(255)`   | -    |
+| `adm_unit_count`      | `integer`                  | -    |
+| `geojson_url`         | `character varying(255)`   | -    |
+| `cos_path`            | `character varying(255)`   | -    |
+| `create_time`         | `timestamp with time zone` | -    |
+| `update_time`         | `timestamp with time zone` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -620,32 +678,34 @@ id,boundary_id,country_name,country_code,represented_year,level,canonical,bounda
 
 - 行数：`8303171`
 - 表用途/使用场景：空间覆盖与轨迹/街景专题
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**可用（地图）**
 - 理由：含空间几何字段，可用于地图/空间分布图；需控制行数与地图渲染性能。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | 自增ID |
-| `trace_id` | `bigint` | trace_id |
-| `file_name` | `character varying(255)` | 文件名 |
-| `point_count` | `integer` | 轨迹点数 |
-| `geom` | `geometry` | 起始坐标 |
-| `description` | `character varying(1000)` | 描述 |
-| `owner` | `character varying(255)` | 上传者 |
-| `tags` | `jsonb` | 标签 |
-| `visible` | `character varying(1000)` | 公开可见 |
-| `upload_time` | `timestamp with time zone` | 轨迹上传时间 |
-| `cos_file_url` | `character varying(300)` | 对象存储url，相对路径 |
-| `cos_file_type` | `character varying(20)` | 文件类型 |
-| `cos_file_size` | `real` | 文件大小,单位MB |
-| `source_url` | `character varying(500)` | 原始url |
-| `source_name` | `character varying(50)` | 原始出处 |
-| `crawl_time` | `timestamp with time zone` | 抓取时间 |
-| `status` | `smallint` | 0未下载gpx，1下载成功 |
-| `transport_type` | `character varying(100)` | 机动车、徒步、非机动车骑行等类型 |
-| `country` | `character varying(10)` | - |
+| 字段名              | 数据类型                       | 字段注释             |
+|------------------|----------------------------|------------------|
+| `id`             | `bigint`                   | 自增ID             |
+| `trace_id`       | `bigint`                   | trace_id         |
+| `file_name`      | `character varying(255)`   | 文件名              |
+| `point_count`    | `integer`                  | 轨迹点数             |
+| `geom`           | `geometry`                 | 起始坐标             |
+| `description`    | `character varying(1000)`  | 描述               |
+| `owner`          | `character varying(255)`   | 上传者              |
+| `tags`           | `jsonb`                    | 标签               |
+| `visible`        | `character varying(1000)`  | 公开可见             |
+| `upload_time`    | `timestamp with time zone` | 轨迹上传时间           |
+| `cos_file_url`   | `character varying(300)`   | 对象存储url，相对路径     |
+| `cos_file_type`  | `character varying(20)`    | 文件类型             |
+| `cos_file_size`  | `real`                     | 文件大小,单位MB        |
+| `source_url`     | `character varying(500)`   | 原始url            |
+| `source_name`    | `character varying(50)`    | 原始出处             |
+| `crawl_time`     | `timestamp with time zone` | 抓取时间             |
+| `status`         | `smallint`                 | 0未下载gpx，1下载成功    |
+| `transport_type` | `character varying(100)`   | 机动车、徒步、非机动车骑行等类型 |
+| `country`        | `character varying(10)`    | -                |
 
 #### 数据样例（CSV，1 行）
 
@@ -658,24 +718,27 @@ id,trace_id,file_name,point_count,geom,description,owner,tags,visible,upload_tim
 
 - 行数：`0`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务
+  ID：[batch_a396f671-7d45-4dca-88c1-11814fad34f4](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a396f671-7d45-4dca-88c1-11814fad34f4&Type=edit)，[batch_da8639d6-72e4-4183-b0f4-2805e6c8003c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_da8639d6-72e4-4183-b0f4-2805e6c8003c&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_way_all_m`
 - Superset报表可用性：**暂不建议**
 - 理由：当前空表（0 行），做报表无数据展示价值，可保留结构待后续入库。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | - |
-| `geom` | `geometry` | - |
-| `node_id` | `bigint` | - |
-| `tags` | `jsonb` | - |
-| `version` | `integer` | - |
-| `timestamp` | `timestamp(6) with time zone` | - |
-| `changeset` | `bigint` | - |
-| `visible` | `boolean` | - |
-| `created_at` | `timestamp(6) with time zone` | - |
-| `updated_at` | `timestamp(6) with time zone` | - |
-| `status` | `smallint` | 0删除，1有效 |
+| 字段名          | 数据类型                          | 字段注释    |
+|--------------|-------------------------------|---------|
+| `id`         | `bigint`                      | -       |
+| `geom`       | `geometry`                    | -       |
+| `node_id`    | `bigint`                      | -       |
+| `tags`       | `jsonb`                       | -       |
+| `version`    | `integer`                     | -       |
+| `timestamp`  | `timestamp(6) with time zone` | -       |
+| `changeset`  | `bigint`                      | -       |
+| `visible`    | `boolean`                     | -       |
+| `created_at` | `timestamp(6) with time zone` | -       |
+| `updated_at` | `timestamp(6) with time zone` | -       |
+| `status`     | `smallint`                    | 0删除，1有效 |
 
 #### 数据样例（CSV，1 行）
 
@@ -687,24 +750,27 @@ id,trace_id,file_name,point_count,geom,description,owner,tags,visible,upload_tim
 
 - 行数：`0`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务
+  ID：[batch_a396f671-7d45-4dca-88c1-11814fad34f4](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a396f671-7d45-4dca-88c1-11814fad34f4&Type=edit)，[batch_da8639d6-72e4-4183-b0f4-2805e6c8003c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_da8639d6-72e4-4183-b0f4-2805e6c8003c&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_way_all_m`
 - Superset报表可用性：**暂不建议**
 - 理由：当前空表（0 行），做报表无数据展示价值，可保留结构待后续入库。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | - |
-| `geom` | `geometry(GeometryCollection,4326)` | - |
-| `relation_id` | `bigint` | - |
-| `tags` | `jsonb` | - |
-| `members` | `jsonb` | - |
-| `version` | `integer` | - |
-| `timestamp` | `timestamp(6) with time zone` | - |
-| `changeset` | `bigint` | - |
-| `visible` | `boolean` | - |
-| `created_at` | `timestamp(6) with time zone` | - |
-| `updated_at` | `timestamp(6) with time zone` | - |
+| 字段名           | 数据类型                                | 字段注释 |
+|---------------|-------------------------------------|------|
+| `id`          | `bigint`                            | -    |
+| `geom`        | `geometry(GeometryCollection,4326)` | -    |
+| `relation_id` | `bigint`                            | -    |
+| `tags`        | `jsonb`                             | -    |
+| `members`     | `jsonb`                             | -    |
+| `version`     | `integer`                           | -    |
+| `timestamp`   | `timestamp(6) with time zone`       | -    |
+| `changeset`   | `bigint`                            | -    |
+| `visible`     | `boolean`                           | -    |
+| `created_at`  | `timestamp(6) with time zone`       | -    |
+| `updated_at`  | `timestamp(6) with time zone`       | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -716,24 +782,27 @@ id,trace_id,file_name,point_count,geom,description,owner,tags,visible,upload_tim
 
 - 行数：`0`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务
+  ID：[batch_a396f671-7d45-4dca-88c1-11814fad34f4](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a396f671-7d45-4dca-88c1-11814fad34f4&Type=edit)，[batch_da8639d6-72e4-4183-b0f4-2805e6c8003c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_da8639d6-72e4-4183-b0f4-2805e6c8003c&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_way_all_m`
 - Superset报表可用性：**暂不建议**
 - 理由：当前空表（0 行），做报表无数据展示价值，可保留结构待后续入库。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | - |
-| `geom` | `geometry` | 几何形状 |
-| `road_id` | `bigint` | - |
-| `tags` | `jsonb` | - |
-| `nodes` | `jsonb` | - |
-| `version` | `integer` | - |
-| `timestamp` | `timestamp(6) with time zone` | - |
-| `changeset` | `bigint` | - |
-| `visible` | `boolean` | - |
-| `created_at` | `timestamp(6) with time zone` | - |
-| `updated_at` | `timestamp(6) with time zone` | - |
+| 字段名          | 数据类型                          | 字段注释 |
+|--------------|-------------------------------|------|
+| `id`         | `bigint`                      | -    |
+| `geom`       | `geometry`                    | 几何形状 |
+| `road_id`    | `bigint`                      | -    |
+| `tags`       | `jsonb`                       | -    |
+| `nodes`      | `jsonb`                       | -    |
+| `version`    | `integer`                     | -    |
+| `timestamp`  | `timestamp(6) with time zone` | -    |
+| `changeset`  | `bigint`                      | -    |
+| `visible`    | `boolean`                     | -    |
+| `created_at` | `timestamp(6) with time zone` | -    |
+| `updated_at` | `timestamp(6) with time zone` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -745,26 +814,28 @@ id,trace_id,file_name,point_count,geom,description,owner,tags,visible,upload_tim
 
 - 行数：`748573`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**条件可用**
 - 理由：可做表格或专题图，需结合业务口径定义指标与筛选条件。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | - |
-| `job_id` | `character varying(50)` | - |
-| `run` | `bigint` | - |
-| `created` | `timestamp with time zone` | - |
-| `source_name` | `character varying(255)` | - |
-| `layer` | `character varying(50)` | - |
-| `name` | `character varying(40)` | - |
-| `status` | `character varying(10)` | - |
-| `file_size` | `bigint` | - |
-| `source_url` | `character varying(1000)` | - |
-| `output_validated` | `boolean` | - |
-| `crawl_time` | `timestamp with time zone` | - |
-| `update_time` | `timestamp with time zone` | - |
+| 字段名                | 数据类型                       | 字段注释 |
+|--------------------|----------------------------|------|
+| `id`               | `bigint`                   | -    |
+| `job_id`           | `character varying(50)`    | -    |
+| `run`              | `bigint`                   | -    |
+| `created`          | `timestamp with time zone` | -    |
+| `source_name`      | `character varying(255)`   | -    |
+| `layer`            | `character varying(50)`    | -    |
+| `name`             | `character varying(40)`    | -    |
+| `status`           | `character varying(10)`    | -    |
+| `file_size`        | `bigint`                   | -    |
+| `source_url`       | `character varying(1000)`  | -    |
+| `output_validated` | `boolean`                  | -    |
+| `crawl_time`       | `timestamp with time zone` | -    |
+| `update_time`      | `timestamp with time zone` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -777,18 +848,20 @@ id,job_id,run,created,source_name,layer,name,status,file_size,source_url,output_
 
 - 行数：`670620`
 - 表用途/使用场景：人口与综合指标分析
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(30)` | - |
-| `subtype` | `character varying(100)` | - |
-| `subtype_cn` | `character varying(100)` | - |
-| `area` | `integer` | - |
-| `population` | `integer` | - |
+| 字段名          | 数据类型                     | 字段注释 |
+|--------------|--------------------------|------|
+| `country`    | `character varying(30)`  | -    |
+| `subtype`    | `character varying(100)` | -    |
+| `subtype_cn` | `character varying(100)` | -    |
+| `area`       | `integer`                | -    |
+| `population` | `integer`                | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -801,16 +874,19 @@ GBR,locality,聚居区,,8114
 
 - 行数：`286481`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务
+  ID：[batch_a396f671-7d45-4dca-88c1-11814fad34f4](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_a396f671-7d45-4dca-88c1-11814fad34f4&Type=edit)，[batch_da8639d6-72e4-4183-b0f4-2805e6c8003c](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_da8639d6-72e4-4183-b0f4-2805e6c8003c&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_osm_way_all_m`
 - Superset报表可用性：**条件可用**
 - 理由：可做表格或专题图，需结合业务口径定义指标与筛选条件。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | - |
-| `members` | `character varying` | - |
-| `tags` | `character varying` | - |
+| 字段名       | 数据类型                | 字段注释 |
+|-----------|---------------------|------|
+| `id`      | `bigint`            | -    |
+| `members` | `character varying` | -    |
+| `tags`    | `character varying` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -823,21 +899,23 @@ id,members,tags
 
 - 行数：`198`
 - 表用途/使用场景：道路专题分析（长度、趋势、对比）
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**可用**
 - 理由：具备国家维度，可做国家级对比、排行、占比图。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `country` | `character varying(3)` | - |
-| `overture_total` | `bigint` | - |
-| `overture_total2` | `bigint` | - |
-| `osm_total` | `bigint` | - |
-| `matched_count` | `bigint` | - |
-| `overture_only_count` | `bigint` | - |
-| `osm_only_count` | `bigint` | - |
-| `match_rate` | `numeric(10,4)` | - |
+| 字段名                   | 数据类型                   | 字段注释 |
+|-----------------------|------------------------|------|
+| `country`             | `character varying(3)` | -    |
+| `overture_total`      | `bigint`               | -    |
+| `overture_total2`     | `bigint`               | -    |
+| `osm_total`           | `bigint`               | -    |
+| `matched_count`       | `bigint`               | -    |
+| `overture_only_count` | `bigint`               | -    |
+| `osm_only_count`      | `bigint`               | -    |
+| `match_rate`          | `numeric(10,4)`        | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -850,27 +928,29 @@ AFG,259371,0,260126,259344,27,782,0.9999
 
 - 行数：`0`
 - 表用途/使用场景：空间覆盖与轨迹/街景专题
+- DLC 任务 ID：
+- Spark 任务主类：`
 - Superset报表可用性：**暂不建议**
 - 理由：当前空表（0 行），做报表无数据展示价值，可保留结构待后续入库。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | - |
-| `file_path` | `character varying(512)` | - |
-| `coordinate_z` | `integer` | - |
-| `coordinate_x` | `integer` | - |
-| `coordinate_y` | `integer` | - |
-| `capture_date` | `timestamp(6) with time zone` | - |
-| `version` | `character varying(254)` | - |
-| `md5` | `character varying(254)` | - |
-| `resolution` | `character varying(254)` | - |
-| `provider` | `character varying(254)` | - |
-| `extent` | `geometry` | - |
-| `metadata` | `jsonb` | - |
-| `created_at` | `timestamp(6) with time zone` | - |
-| `updated_at` | `timestamp(6) with time zone` | - |
+| 字段名            | 数据类型                          | 字段注释 |
+|----------------|-------------------------------|------|
+| `id`           | `bigint`                      | -    |
+| `file_path`    | `character varying(512)`      | -    |
+| `coordinate_z` | `integer`                     | -    |
+| `coordinate_x` | `integer`                     | -    |
+| `coordinate_y` | `integer`                     | -    |
+| `capture_date` | `timestamp(6) with time zone` | -    |
+| `version`      | `character varying(254)`      | -    |
+| `md5`          | `character varying(254)`      | -    |
+| `resolution`   | `character varying(254)`      | -    |
+| `provider`     | `character varying(254)`      | -    |
+| `extent`       | `geometry`                    | -    |
+| `metadata`     | `jsonb`                       | -    |
+| `created_at`   | `timestamp(6) with time zone` | -    |
+| `updated_at`   | `timestamp(6) with time zone` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -882,18 +962,20 @@ AFG,259371,0,260126,259344,27,782,0.9999
 
 - 行数：`8500`
 - 表用途/使用场景：基础数据或专题扩展
+- DLC 任务 ID：
+- Spark 任务主类：系统表（无需ETL任务）
 - Superset报表可用性：**条件可用**
 - 理由：可做表格或专题图，需结合业务口径定义指标与筛选条件。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `srid` | `integer` | - |
-| `auth_name` | `character varying(256)` | - |
-| `auth_srid` | `integer` | - |
-| `srtext` | `character varying(2048)` | - |
-| `proj4text` | `character varying(2048)` | - |
+| 字段名         | 数据类型                      | 字段注释 |
+|-------------|---------------------------|------|
+| `srid`      | `integer`                 | -    |
+| `auth_name` | `character varying(256)`  | -    |
+| `auth_srid` | `integer`                 | -    |
+| `srtext`    | `character varying(2048)` | -    |
+| `proj4text` | `character varying(2048)` | -    |
 
 #### 数据样例（CSV，1 行）
 
@@ -906,27 +988,30 @@ srid,auth_name,auth_srid,srtext,proj4text
 
 - 行数：`187626`
 - 表用途/使用场景：空间覆盖与轨迹/街景专题
+- DLC 任务
+  ID：[batch_2d6c6166-00c4-4f98-962a-620d33113e27](https://console.cloud.tencent.com/dlc/data-work?JobId=batch_2d6c6166-00c4-4f98-962a-620d33113e27&Type=edit)
+- Spark 任务主类：`com.maptech.dwd.Dwd_google_streetview_raw_data_process_d`
 - Superset报表可用性：**可用（地图）**
 - 理由：含空间几何字段，可用于地图/空间分布图；需控制行数与地图渲染性能。
 
 #### 字段结构表
 
-| 字段名 | 数据类型 | 字段注释 |
-|---|---|---|
-| `id` | `bigint` | - |
-| `panoid` | `character varying(255)` | 拍摄点ID |
-| `country` | `character varying(255)` | - |
-| `bbox` | `geometry` | 复制路口bbox |
-| `geom` | `geometry` | 拍摄点gps |
-| `img_list` | `jsonb` | - |
-| `photo_time` | `timestamp with time zone` | 拍摄时间yyyy-mm |
-| `crawl_from` | `character varying(255)` | 枚举：search，nearby |
-| `origin_data` | `jsonb` | 原始数据 |
-| `create_time` | `timestamp with time zone` | - |
-| `update_time` | `timestamp with time zone` | - |
-| `location` | `jsonb` | 拍摄点位置信息 |
-| `trans_label` | `text` | - |
-| `status` | `smallint` | 是否已下载图片 |
+| 字段名           | 数据类型                       | 字段注释             |
+|---------------|----------------------------|------------------|
+| `id`          | `bigint`                   | -                |
+| `panoid`      | `character varying(255)`   | 拍摄点ID            |
+| `country`     | `character varying(255)`   | -                |
+| `bbox`        | `geometry`                 | 复制路口bbox         |
+| `geom`        | `geometry`                 | 拍摄点gps           |
+| `img_list`    | `jsonb`                    | -                |
+| `photo_time`  | `timestamp with time zone` | 拍摄时间yyyy-mm      |
+| `crawl_from`  | `character varying(255)`   | 枚举：search，nearby |
+| `origin_data` | `jsonb`                    | 原始数据             |
+| `create_time` | `timestamp with time zone` | -                |
+| `update_time` | `timestamp with time zone` | -                |
+| `location`    | `jsonb`                    | 拍摄点位置信息          |
+| `trans_label` | `text`                     | -                |
+| `status`      | `smallint`                 | 是否已下载图片          |
 
 #### 数据样例（CSV，1 行）
 
