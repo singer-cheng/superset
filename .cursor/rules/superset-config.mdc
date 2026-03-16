@@ -1,0 +1,18 @@
+---
+description: Superset 连接配置，操作看板/图表/数据集时自动引用
+alwaysApply: false
+---
+
+# Superset 实例配置
+
+| 项目 | 值 |
+|------|-----|
+| 地址 | `http://172.22.67.236` |
+| 用户名 | `admin` |
+| 密码 | `tnq_PWV0kex3tpr1ber` |
+
+## 重要说明
+
+- Superset MCP 工具可直接读写图表、数据集、看板，但**无法可靠地修改看板的 json_metadata**（服务端会合并而非替换）。
+- 若需修改看板 `json_metadata`（如 `color_scheme`、`native_filter_configuration`），必须通过 REST API + Session Cookie 方式调用 `PUT /api/v1/dashboard/{id}`。
+- REST API 调用流程见 `~/.cursor/skills/superset-operations/SKILL.md`。

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "superset": {
+      "command": "uvx",
+      "args": [
+        "superset-mcp"
+      ],
+      "env": {
+        "SUPERSET_BASE_URL": "http://127.0.0.1:8088",
+        "SUPERSET_USERNAME": "admin",
+        "SUPERSET_PASSWORD": "tnq_PWV0kex3tpr1ber"
+      }
+    }
+  }
+}
